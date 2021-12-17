@@ -198,22 +198,25 @@ describe("DatasetTree Integration Tests", async () => {
      * Tests the deleteSession() function
      *************************************************************************************************************/
     it("Tests the addSession() function by adding the default history, deleting, then adding a passed session then deleting", async () => {
-        let len: number;
         for (const sess of testTree.mSessionNodes) {
+            // Deletes all sessions except Favorites
             if (sess.contextValue === DS_SESSION_CONTEXT) {
                 testTree.deleteSession(sess);
             }
         }
-        len = testTree.mSessionNodes.length;
-        await testTree.addSession();
+        const len: number = testTree.mSessionNodes.length; // Start with len = 1 session (Favorites)
+        await testTree.addSession(); // Add default session
         expect(testTree.mSessionNodes.length).toBeGreaterThan(len);
-        len = testTree.mSessionNodes.length;
+    }).timeout(TIMEOUT);
+
+    it("Tests the addSession() function with a passed session", async () => {
+        const len: number = testTree.mSessionNodes.length;
         for (const sess of testTree.mSessionNodes) {
             if (sess.contextValue === DS_SESSION_CONTEXT) {
                 testTree.deleteSession(sess);
             }
         }
-        await testTree.addSession(testConst.profile.name);
+        await testTree.addSession(testConst.profile.name); // Add passed session
         expect(testTree.mSessionNodes.length).toEqual(len + 1);
     }).timeout(TIMEOUT);
 
