@@ -318,6 +318,7 @@ export class ProfilesCache {
         this.allTypes = [];
         const mProfileInfo = ProfilesCache.getConfigInstance();
         const allTypes = this.getAllProfileTypes(apiRegister.registeredApiTypes());
+        allTypes.push("base");
         for (const type of allTypes) {
             // Step 1: Get all profiles for each registered type
             const profilesForType = mProfileInfo.getAllProfiles(type).filter((temp) => temp.profLoc.osLoc.length !== 0);
