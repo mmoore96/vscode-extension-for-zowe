@@ -158,6 +158,8 @@ describe("Add Profile to Favorites", () => {
         await driverChrome.sleepTime(SHORTSLEEPTIME);
         const favoriteProfile = await driverChrome.getFavoritePrfileNameFromDatasets();
         expect(favoriteProfile).to.equal("TestSeleniumProfile");
+        await driverChrome.sleepTime(SHORTSLEEPTIME);
+        await driverChrome.clickOnFavoriteTabInDatasets();
     });
 
     it("Should Add Profile to Favorites under USS", async () => {
@@ -171,6 +173,8 @@ describe("Add Profile to Favorites", () => {
         await driverChrome.sleepTime(SHORTSLEEPTIME);
         const favoriteProfile = await driverChrome.getFavoritePrfileNameFromUss();
         expect(favoriteProfile).to.equal("TestSeleniumProfile");
+        await driverChrome.sleepTime(SHORTSLEEPTIME);
+        await driverChrome.clickOnFavoriteTabInUss();
     });
 
     it("Should Add Profile to Favorites under JOBS", async () => {
@@ -184,6 +188,8 @@ describe("Add Profile to Favorites", () => {
         await driverChrome.sleepTime(SHORTSLEEPTIME);
         const favoriteProfile = await driverChrome.getFavoritePrfileNameFromJobs();
         expect(favoriteProfile).to.equal("TestSeleniumProfile");
+        await driverChrome.sleepTime(SHORTSLEEPTIME);
+        await driverChrome.clickOnFavoriteTabInJobs();
     });
 
     after(async () => driverChrome.closeBrowser());
