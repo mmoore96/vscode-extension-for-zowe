@@ -158,8 +158,6 @@ describe("Add Profile to Favorites", () => {
         await driverChrome.sleepTime(SHORTSLEEPTIME);
         const favoriteProfile = await driverChrome.getFavoritePrfileNameFromDatasets();
         expect(favoriteProfile).to.equal("TestSeleniumProfile");
-        await driverChrome.sleepTime(SHORTSLEEPTIME);
-        await driverChrome.clickOnFavoriteTabInDatasets();
     });
 
     it("Should Add Profile to Favorites under USS", async () => {
@@ -173,12 +171,10 @@ describe("Add Profile to Favorites", () => {
         await driverChrome.sleepTime(SHORTSLEEPTIME);
         const favoriteProfile = await driverChrome.getFavoritePrfileNameFromUss();
         expect(favoriteProfile).to.equal("TestSeleniumProfile");
-        await driverChrome.sleepTime(SHORTSLEEPTIME);
-        await driverChrome.clickOnFavoriteTabInUss();
     });
 
     it("Should Add Profile to Favorites under JOBS", async () => {
-        await driverChrome.clickOnUssTabs();
+        await driverChrome.clickOnJobsTab();
         await driverChrome.sleepTime(SHORTSLEEPTIME);
         await driverChrome.clickOnJobsTab();
         await driverChrome.sleepTime(SHORTSLEEPTIME);
@@ -188,8 +184,6 @@ describe("Add Profile to Favorites", () => {
         await driverChrome.sleepTime(SHORTSLEEPTIME);
         const favoriteProfile = await driverChrome.getFavoritePrfileNameFromJobs();
         expect(favoriteProfile).to.equal("TestSeleniumProfile");
-        await driverChrome.sleepTime(SHORTSLEEPTIME);
-        await driverChrome.clickOnFavoriteTabInJobs();
     });
 
     after(async () => driverChrome.closeBrowser());
@@ -205,6 +199,8 @@ describe("Remove Profile from Favorites", () => {
     });
 
     it("Should Remove Profile from Favorites under DATA SETS", async () => {
+        await driverChrome.clickOnDatasetsTab();
+        await driverChrome.sleepTime(SHORTSLEEPTIME);
         await driverChrome.clickOnFavoriteTabInDatasets();
         await driverChrome.sleepTime(SHORTSLEEPTIME);
         await driverChrome.removeFavoriteProfileFromDatasets();
