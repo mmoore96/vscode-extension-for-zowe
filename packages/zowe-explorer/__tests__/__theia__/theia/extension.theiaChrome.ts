@@ -88,6 +88,8 @@ export async function getFavoritePrfileNameFromJobs() {
 }
 
 export async function removeFavoriteProfileFromDatasets() {
+    const faveTab = await driverChrome.wait(until.elementsLocated(By.id(DatasetsLocators.favoriteTabId)));
+    await driverChrome.actions().click(faveTab, Button.LEFT);
     const removeFromFavorite = await driverChrome.wait(
         until.elementLocated(By.xpath(DatasetsLocators.favoriteProfileInDatasetXpath)),
         WAITTIME
