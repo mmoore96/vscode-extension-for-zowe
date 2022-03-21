@@ -21,7 +21,7 @@
     "semver": "^7.3.5"
   },
   "scripts": {
-    "build": "yarn clean && tsc -p ./",
+    "build": "yarn clean && tsc -p ./ && yarn circDep",
     "test": "echo \"zowe-explorer-api: coming soon.\"",
     "lint": "concurrently -n \"_eslint_,prettier\" \"eslint . --ext .ts\" \"prettier --check .\"",
     "lintErrors": "echo \"zowe-explorer-api: coming soon.\"",
@@ -29,6 +29,7 @@
     "clean": "rimraf lib",
     "fresh-clone": "yarn clean && rimraf node_modules",
     "license": "node ../../scripts/license.js",
-    "package": "yarn license && yarn lint && yarn build && npm pack && node ../../scripts/mv-pack.js zowe-zowe-explorer-api tgz"
+    "package": "yarn license && yarn lint && yarn build && npm pack && node ../../scripts/mv-pack.js zowe-zowe-explorer-api tgz",
+    "circDep": "madge --extensions ts --circular ./src"
   }
 }

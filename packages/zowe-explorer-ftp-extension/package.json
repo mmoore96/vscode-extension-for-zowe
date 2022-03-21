@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "prepare": "yarn build",
-    "build": "yarn clean && webpack --mode development",
+    "build": "yarn clean && webpack --mode development && yarn circDep",
     "test:unit": "jest \".*__tests__.*\\.unit\\.test\\.ts\" --coverage",
     "test": "yarn test:unit",
     "lint": "concurrently -n \"_eslint_,prettier\" \"eslint . --ext .ts\" \"prettier --check .\"",
@@ -41,7 +41,8 @@
     "fresh-clone": "yarn clean && rimraf node_modules",
     "vscode:prepublish": "yarn license && yarn lint && webpack --mode production",
     "license": "node ../../scripts/license.js",
-    "package": "vsce package --allow-star-activation --yarn && node ../../scripts/mv-pack.js zowe-explorer-ftp-extension vsix"
+    "package": "vsce package --allow-star-activation --yarn && node ../../scripts/mv-pack.js zowe-explorer-ftp-extension vsix",
+    "circDep": "madge --extensions ts --circular ./src"
   },
   "engines": {
     "vscode": "^1.53.2"

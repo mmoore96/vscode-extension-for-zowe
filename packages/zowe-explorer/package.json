@@ -1656,7 +1656,7 @@
   },
   "scripts": {
     "vscode:prepublish": "yarn createTestProfileData && gulp build && yarn license && yarn lint && webpack --mode production && yarn updateStrings",
-    "build": "yarn createTestProfileData && gulp build && yarn license && webpack --mode development",
+    "build": "yarn createTestProfileData && gulp build && yarn license && webpack --mode development && yarn circDep",
     "build:integration": "yarn createTestProfileData && gulp build && yarn license && tsc --build --pretty",
     "test:unit": "jest \".*__tests__.*\\.unit\\.test\\.ts\" --coverage",
     "test:theia": "mocha ./out/__tests__/__theia__/*.theia.test.js --timeout 50000",
@@ -1676,7 +1676,8 @@
     "lintErrors": "echo \"zowe-explorer: lintErrors coming soon with eslint.\"",
     "pretty": "prettier --write .",
     "createTestProfileData": "ts-node ./scripts/createTestProfileData.ts",
-    "createDemoNodes": "ts-node ./scripts/createDemoNodes.ts"
+    "createDemoNodes": "ts-node ./scripts/createDemoNodes.ts",
+    "circDep": "madge --extensions ts --circular ./src"
   },
   "engines": {
     "vscode": "^1.53.2"
