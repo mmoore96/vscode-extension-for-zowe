@@ -135,6 +135,13 @@ export class ProfilesCache {
         this.allExternalTypes.add(profileTypeName);
     }
 
+    /**
+     * Refreshes profile information stored
+     *
+     * @param {ZoweExplorerApi.IApiRegisterClient} apiRegister
+     *
+     * @returns {void}
+     */
     public async refresh(apiRegister?: ZoweExplorerApi.IApiRegisterClient): Promise<void> {
         this.allProfiles = [];
         let tmpAllProfiles: imperative.IProfileLoaded[] = [];
@@ -174,6 +181,13 @@ export class ProfilesCache {
         }
     }
 
+    /**
+     * Parses and Confirms the passed URL is valid
+     *
+     * @param {string} newUrl
+     *
+     * @returns {IUrlValidator}
+     */
     public validateAndParseUrl(newUrl: string): IUrlValidator {
         let url: URL;
 
@@ -201,8 +215,14 @@ export class ProfilesCache {
         return validationResult;
     }
 
-    // gets schema from /.zowe/profiles/profileType directory
-    // used by Zowe Explorer for creation & update of v1 profiles
+    /**
+     * Gets schema from /.zowe/profiles/profileType directory.
+     * used by Zowe Explorer for creation & update of v1 profiles
+     *
+     * @param {string} profileType
+     *
+     * @returns {Record<string, unknown>}
+     */
     public getSchema(profileType: string): Record<string, unknown> {
         const profileManager = this.getCliProfileManager(profileType);
         const configOptions = Array.from(profileManager.configurations);
@@ -215,12 +235,22 @@ export class ProfilesCache {
         return schema;
     }
 
-    // Return string[] of all profile types set by refresh
+    /**
+     * Return string[] of all profile types set by refresh
+     *
+     * @returns {string[]}
+     */
     public getAllTypes(): string[] {
         return this.allTypes;
     }
 
-    // get string[] of profile names by type
+    /**
+     * Return string[] of profile names by type
+     *
+     * @param {string} type Profile type for the profile names to be returned
+     *
+     * @returns {string[]}
+     */
     public async getNamesForType(type: string): Promise<string[]> {
         const profilesForType = await this.fetchAllProfilesByType(type);
         return profilesForType.map((profile) => {
@@ -228,7 +258,13 @@ export class ProfilesCache {
         });
     }
 
-    // get IProfileLoaded[] from imperative
+    /**
+     * Get IProfileLoaded[] from imperative
+     *
+     * @param {string} type Profile type for the profiles to be returned
+     *
+     * @returns {IProfileLoaded[]}
+     */
     public async fetchAllProfilesByType(type: string): Promise<imperative.IProfileLoaded[]> {
         const profByType: imperative.IProfileLoaded[] = [];
         const mProfileInfo = await this.getProfileInfo();
@@ -244,6 +280,14 @@ export class ProfilesCache {
         return profByType;
     }
 
+    /**
+     * Get IProfileLoaded by profile type and name from Imperative's CliProfileManager
+     *
+     * @param {string} type Profile type of the profile to be returned
+     * @param {string} name Profile name of the profile to be returned
+     *
+     * @returns {IProfileLoaded}
+     */
     public async directLoad(type: string, name: string): Promise<imperative.IProfileLoaded> {
         let directProfile: imperative.IProfileLoaded;
         const profileManager = this.getCliProfileManager(type);
@@ -253,6 +297,13 @@ export class ProfilesCache {
         return directProfile;
     }
 
+    /**
+     * Get IProfAttrs by profile name from Imperative's ProfileInfo
+     *
+     * @param {string} profileName Profile name of the profile to be returned
+     *
+     * @returns {IProfAttrs}
+     */
     public async getProfileFromConfig(profileName: string): Promise<imperative.IProfAttrs> {
         const mProfileInfo = await this.getProfileInfo();
         const configAllProfiles = mProfileInfo.getAllProfiles().filter((temp) => temp.profLoc.osLoc.length !== 0);
@@ -260,6 +311,13 @@ export class ProfilesCache {
         return currentProfile;
     }
 
+    /**
+     * Get IProfileLoaded by profile name from Imperative's ProfileInfo
+     *
+     * @param {string} profileName Profile name of the profile to be returned
+     *
+     * @returns {IProfileLoaded}
+     */
     public async getLoadedProfConfig(profileName: string): Promise<imperative.IProfileLoaded> {
         const mProfileInfo = await this.getProfileInfo();
         const currentProfile = await this.getProfileFromConfig(profileName);
@@ -272,7 +330,13 @@ export class ProfilesCache {
         return this.getProfileLoaded(currentProfile.profName, currentProfile.profType, profile);
     }
 
-    // V1 specific used by Zowe Explorer to handle v1 profiles
+    /**
+     * V1 specific used by Zowe Explorer to handle v1 profiles
+     *
+     * @param {string} type Profile type of the profile to be managed
+     *
+     * @returns {CliProfileManager}
+     */
     public getCliProfileManager(type: string): imperative.CliProfileManager {
         let profileManager = this.profileManagerByType.get(type);
         if (!profileManager) {
@@ -293,7 +357,11 @@ export class ProfilesCache {
         return profileManager;
     }
 
-    // This will retrieve the saved base profile in the allProfiles array
+    /**
+     * This will retrieve the saved base profile in the allProfiles array
+     *
+     * @returns {IProfileLoaded}
+     */
     public getBaseProfile(): imperative.IProfileLoaded {
         let baseProfile: imperative.IProfileLoaded;
         for (const baseP of this.allProfiles) {
@@ -304,7 +372,11 @@ export class ProfilesCache {
         return baseProfile;
     }
 
-    // This will retrieve the base profile from imperative
+    /**
+     * This will retrieve the base profile from Imperative
+     *
+     * @returns {IProfileLoaded}
+     */
     public async fetchBaseProfile(): Promise<imperative.IProfileLoaded> {
         const mProfileInfo = await this.getProfileInfo();
         const baseProfileAttrs = mProfileInfo.getDefaultProfile("base");
@@ -312,6 +384,13 @@ export class ProfilesCache {
         return this.getProfileLoaded(baseProfileAttrs.profName, baseProfileAttrs.profType, profAttr);
     }
 
+    /**
+     * @deprecated
+     * V1 specific.
+     * Checks if the Secure Credentials Store Plugin is installed.
+     *
+     * @returns {boolean}
+     */
     public isSecureCredentialPluginActive(): boolean {
         let imperativeIsSecure = false;
         try {
@@ -335,16 +414,14 @@ export class ProfilesCache {
     }
 
     /**
-     * @deprecated Please use ProfilesCache.getProfileLoaded(...)
+     * Creates an IProfileLoaded with profile name, type, and IProfile
+     *
+     * @param {string} profileName Profile name of the profile
+     * @param {string} profileType Profile type of the profile
+     * @param {IProfile} profile
+     *
+     * @returns {IProfileLoaded}
      */
-    // public getProfileLoaded(
-    //     profileName: string,
-    //     profileType: string,
-    //     profile: imperative.IProfile
-    // ): imperative.IProfileLoaded {
-    //     return ProfilesCache.getProfileLoaded(profileName, profileType, profile);
-    // }
-
     public getProfileLoaded(
         profileName: string,
         profileType: string,
@@ -359,7 +436,13 @@ export class ProfilesCache {
         };
     }
 
-    // used by Zowe Explorer for v1 profiles
+    /**
+     * Used by Zowe Explorer for v1 profiles to delete profile from local disk
+     *
+     * @param {IProfileLoaded} ProfileInfo The Profile to be deleted
+     *
+     * @returns {void}
+     */
     protected async deleteProfileOnDisk(ProfileInfo: imperative.IProfileLoaded): Promise<void> {
         await this.getCliProfileManager(ProfileInfo.type).delete({
             profile: ProfileInfo,
@@ -368,7 +451,15 @@ export class ProfilesCache {
         });
     }
 
-    // used by Zowe Explorer for v1 profiles
+    /**
+     * Used by Zowe Explorer for v1 profiles to save profile information to local disk
+     *
+     * @param {Record<string, unknown>} profileInfo
+     * @param {string} profileName
+     * @param {string} profileType
+     *
+     * @returns {IProfile}
+     */
     protected async saveProfile(
         profileInfo: Record<string, unknown>,
         profileName: string,
@@ -383,7 +474,11 @@ export class ProfilesCache {
         return newProfile.profile;
     }
 
-    // used by refresh to check correct merging of allProfiles
+    /**
+     * Used by refresh to check correct merging of allProfiles
+     *
+     * @returns {void}
+     */
     protected checkMergingConfigAllProfiles(): void {
         const baseProfile = this.defaultProfileByType.get("base");
         const allProfiles: imperative.IProfileLoaded[] = [];
@@ -420,12 +515,20 @@ export class ProfilesCache {
         this.allProfiles.push(...allProfiles);
     }
 
-    // check correct merging of a single profile
+    /**
+     * Check correct merging of a single profile
+     *
+     * @param {IProfileLoaded} profile
+     *
+     * @returns {IProfileLoaded}
+     */
     protected async checkMergingConfigSingleProfile(
         profile: imperative.IProfileLoaded
     ): Promise<imperative.IProfileLoaded> {
         const baseProfile = await this.fetchBaseProfile();
         if (
+            baseProfile?.profile?.host &&
+            baseProfile?.profile?.port &&
             (baseProfile?.profile.host !== profile?.profile.host ||
                 baseProfile?.profile?.port !== profile?.profile.port) &&
             profile?.profile.tokenType == "apimlAuthenticationToken"
@@ -436,6 +539,14 @@ export class ProfilesCache {
         return profile;
     }
 
+    /**
+     * Gets a profile's merged and secure attributes from Imperative
+     *
+     * @param {ProfileInfo} mProfileInfo
+     * @param {IProfAttrs} profAttrs
+     *
+     * @returns {IProfile}
+     */
     protected async getMergedAttrs(
         mProfileInfo: imperative.ProfileInfo,
         profAttrs: imperative.IProfAttrs
@@ -451,8 +562,14 @@ export class ProfilesCache {
         return profile;
     }
 
-    // create an array that includes registered types from apiRegister.registeredApiTypes()
-    // and allExternalTypes
+    /**
+     * Creates an array that includes registered types from apiRegister.registeredApiTypes()
+     * and allExternalTypes
+     *
+     * @param {string[]} registeredTypes
+     *
+     * @returns {string[]}
+     */
     private getAllProfileTypes(registeredTypes: string[]): string[] {
         const externalTypeArray: string[] = Array.from(this.allExternalTypes);
         const allTypes = registeredTypes.concat(
