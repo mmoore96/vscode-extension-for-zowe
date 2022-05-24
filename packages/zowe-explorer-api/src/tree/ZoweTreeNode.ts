@@ -48,7 +48,7 @@ export class ZoweTreeNode extends vscode.TreeItem {
     ) {
         super(label, collapsibleState);
         // TODO Check this
-        if (!profile && mParent && mParent.getProfile()) {
+        if (!profile && mParent?.getProfile()) {
             this.profile = mParent.getProfile();
         }
     }

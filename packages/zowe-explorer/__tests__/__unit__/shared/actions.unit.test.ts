@@ -470,7 +470,7 @@ describe("Shared Actions Unit Tests - Function resetValidationSettings", () => {
                 };
             }),
         });
-        const response = await sharedActions.resetValidationSettings(testNode, false);
+        const response = sharedActions.resetValidationSettings(testNode, false);
         expect(response.contextValue).toContain(`${globals.VALIDATE_SUFFIX}false`);
     });
 
@@ -488,7 +488,7 @@ describe("Shared Actions Unit Tests - Function resetValidationSettings", () => {
                 };
             }),
         });
-        const response = await sharedActions.resetValidationSettings(testNode, true);
+        const response = sharedActions.resetValidationSettings(testNode, true);
         expect(response.contextValue).toContain(`${globals.VALIDATE_SUFFIX}true`);
     });
 });

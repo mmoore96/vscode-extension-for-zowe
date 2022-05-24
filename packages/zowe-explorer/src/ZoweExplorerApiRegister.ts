@@ -251,7 +251,7 @@ export class ZoweExplorerApiRegister implements ZoweExplorerApi.IApiRegisterClie
         } else {
             throw new Error(
                 localize("getUssApi.error", "Internal error: Tried to call a non-existing USS API in API register: ") +
-                    profile.type
+                profile.type
             );
         }
     }
@@ -270,7 +270,7 @@ export class ZoweExplorerApiRegister implements ZoweExplorerApi.IApiRegisterClie
         } else {
             throw new Error(
                 localize("getMvsApi.error", "Internal error: Tried to call a non-existing MVS API in API register: ") +
-                    profile.type
+                profile.type
             );
         }
     }
@@ -289,7 +289,7 @@ export class ZoweExplorerApiRegister implements ZoweExplorerApi.IApiRegisterClie
         } else {
             throw new Error(
                 localize("getJesApi.error", "Internal error: Tried to call a non-existing JES API in API register: ") +
-                    profile.type
+                profile.type
             );
         }
     }
@@ -319,13 +319,13 @@ export class ZoweExplorerApiRegister implements ZoweExplorerApi.IApiRegisterClie
         let result: ZoweExplorerApi.ICommon;
         try {
             result = this.getUssApi(profile);
-        } catch (error) {
+        } catch (_ussError) {
             try {
                 result = this.getMvsApi(profile);
-            } catch (error) {
+            } catch (_mvsError) {
                 try {
                     result = this.getJesApi(profile);
-                } catch (error) {
+                } catch (_jesError) {
                     try {
                         result = this.getCommandApi(profile);
                     } catch (error) {

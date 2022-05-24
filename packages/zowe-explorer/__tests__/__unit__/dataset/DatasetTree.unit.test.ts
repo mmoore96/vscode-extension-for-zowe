@@ -721,7 +721,7 @@ describe("Dataset Tree Unit Tests - Function getSearchHistory", () => {
         mocked(vscode.window.createTreeView).mockReturnValueOnce(blockMocks.treeView);
         const testTree = new DatasetTree();
 
-        testTree.addSearchHistory("testHistory");
+        await testTree.addSearchHistory("testHistory");
 
         expect(testTree.getSearchHistory()).toEqual(["testHistory"]);
     });
@@ -1248,7 +1248,7 @@ describe("Dataset Tree Unit Tests - Function deleteSession", () => {
         const testTree = new DatasetTree();
         testTree.mSessionNodes.push(blockMocks.datasetSessionNode);
 
-        testTree.deleteSession(testTree.mSessionNodes[1]);
+        await testTree.deleteSession(testTree.mSessionNodes[1]);
 
         expect(testTree.mSessionNodes.map((node) => node.label)).toEqual(["Favorites"]);
     });
@@ -1419,7 +1419,7 @@ describe("Dataset Tree Unit Tests - Function datasetFilterPrompt", () => {
         mocked(vscode.window.showInputBox).mockResolvedValueOnce("HLQ.PROD1.STUFF");
         const testTree = new DatasetTree();
         testTree.mSessionNodes.push(blockMocks.datasetSessionNode);
-        testTree.addSearchHistory("test");
+        await testTree.addSearchHistory("test");
 
         await testTree.datasetFilterPrompt(testTree.mSessionNodes[1]);
 
@@ -1434,7 +1434,7 @@ describe("Dataset Tree Unit Tests - Function datasetFilterPrompt", () => {
         mocked(vscode.window.createTreeView).mockReturnValueOnce(blockMocks.treeView);
         const testTree = new DatasetTree();
         testTree.mSessionNodes.push(blockMocks.datasetSessionNode);
-        testTree.addSearchHistory("test");
+        await testTree.addSearchHistory("test");
 
         await testTree.datasetFilterPrompt(testTree.mSessionNodes[1]);
 
@@ -1556,7 +1556,7 @@ describe("Dataset Tree Unit Tests - Function datasetFilterPrompt", () => {
         resolveQuickPickSpy.mockResolvedValueOnce(quickPickItem);
         const testTree = new DatasetTree();
         testTree.mSessionNodes.push(blockMocks.datasetSessionNode);
-        testTree.addSearchHistory("test");
+        await testTree.addSearchHistory("test");
 
         await testTree.datasetFilterPrompt(testTree.mSessionNodes[1]);
 
@@ -1576,7 +1576,7 @@ describe("Dataset Tree Unit Tests - Function datasetFilterPrompt", () => {
         resolveQuickPickSpy.mockResolvedValueOnce(quickPickItem);
         const testTree = new DatasetTree();
         testTree.mSessionNodes.push(blockMocks.datasetSessionNode);
-        testTree.addSearchHistory("test");
+        await testTree.addSearchHistory("test");
 
         await testTree.datasetFilterPrompt(testTree.mSessionNodes[1]);
 

@@ -229,7 +229,7 @@ describe("USSTree Integration Tests", async () => {
      *************************************************************************************************************/
     it("Tests the deleteSession() function", async () => {
         const len = testTree.mSessionNodes.length;
-        testTree.deleteSession(sessNode);
+        await testTree.deleteSession(sessNode);
         expect(testTree.mSessionNodes.length).toEqual(len - 1);
     });
 
@@ -243,7 +243,7 @@ describe("USSTree Integration Tests", async () => {
         expect(testTree.mSessionNodes.length).toBeGreaterThanOrEqual(len + 1);
         len = testTree.mSessionNodes.length;
         const testNode = testTree.mSessionNodes[len - 1];
-        testTree.deleteSession(testNode);
+        await testTree.deleteSession(testNode);
         len--;
         expect(testTree.mSessionNodes.length).toEqual(len);
         await testTree.addSession(testNode.label as string);

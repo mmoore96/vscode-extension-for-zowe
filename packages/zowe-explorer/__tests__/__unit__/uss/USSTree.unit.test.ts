@@ -569,7 +569,7 @@ describe("USSTree Unit Tests - Function USSTree.deleteSession()", () => {
         const globalMocks = await createGlobalMocks();
         const blockMocks = await createBlockMocks(globalMocks);
 
-        blockMocks.testTree2.deleteSession(blockMocks.testTree2.mSessionNodes[blockMocks.startLength - 1]);
+        await blockMocks.testTree2.deleteSession(blockMocks.testTree2.mSessionNodes[blockMocks.startLength - 1]);
         expect(blockMocks.testTree2.mSessionNodes.length).toEqual(blockMocks.startLength - 1);
     });
 });

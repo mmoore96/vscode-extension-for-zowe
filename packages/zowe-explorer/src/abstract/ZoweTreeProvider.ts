@@ -179,7 +179,7 @@ export class ZoweTreeProvider {
             if (await node.getSession()) {
                 await setSession(node, EditSession as ISession);
             } else {
-                zoweFileProvider.deleteSession(node.getSessionNode());
+                await zoweFileProvider.deleteSession(node.getSessionNode());
                 this.mHistory.addSession(node.label as string);
                 zoweFileProvider.addSession(node.getProfileName());
             }
@@ -271,8 +271,8 @@ export class ZoweTreeProvider {
         await Profiles.getInstance().createZoweSession(zoweFileProvider);
     }
 
-    protected deleteSessionByLabel(revisedLabel: string) {
-        this.mHistory.removeSession(revisedLabel);
+    protected async deleteSessionByLabel(revisedLabel: string): Promise<void> {
+        await this.mHistory.removeSession(revisedLabel);
         this.refresh();
     }
 }

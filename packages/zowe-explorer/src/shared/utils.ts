@@ -193,7 +193,7 @@ export async function markFileAsDirty(doc: vscode.TextDocument): Promise<void> {
     const startPosition = new vscode.Position(0, 0);
     const endPosition = new vscode.Position(doc.lineCount, 0);
     const deleteRange = new vscode.Range(startPosition, endPosition);
-    vscode.window.activeTextEditor.edit((editBuilder) => {
+    await vscode.window.activeTextEditor.edit((editBuilder) => {
         editBuilder.delete(deleteRange);
         editBuilder.insert(startPosition, docText);
     });
@@ -268,43 +268,39 @@ export async function willForceUpload(
         title = localize("saveUSSFile.response.title", "Saving file...");
     }
     if (globals.ISTHEIA) {
-        vscode.window.showWarningMessage(
+        await vscode.window.showWarningMessage(
             localize(
                 "saveFile.error.theiaDetected",
                 "A merge conflict has been detected. Since you are running inside Theia editor, a merge conflict resolution is not available yet."
             )
         );
     }
-    vscode.window
+    const selection = await vscode.window
         .showInformationMessage(
             localize("saveFile.info.confirmUpload", "Would you like to overwrite the remote file?"),
             localize("saveFile.overwriteConfirmation.yes", "Yes"),
             localize("saveFile.overwriteConfirmation.no", "No")
-        )
-        .then(async (selection) => {
-            if (selection === localize("saveFile.overwriteConfirmation.yes", "Yes")) {
-                const uploadResponse = vscode.window.withProgress(
-                    {
-                        location: vscode.ProgressLocation.Notification,
-                        title,
-                    },
-                    () => {
-                        return uploadContent(node, doc, remotePath, profile, binary, null, returnEtag);
-                    }
-                );
-                uploadResponse.then((response) => {
-                    if (response.success) {
-                        vscode.window.showInformationMessage(response.commandResponse);
-                        if (node) {
-                            node.setEtag(response.apiResponse[0].etag);
-                        }
-                    }
-                });
-            } else {
-                vscode.window.showInformationMessage("Upload cancelled.");
-                await markFileAsDirty(doc);
+        );
+    if (selection === localize("saveFile.overwriteConfirmation.yes", "Yes")) {
+        const uploadResponse = await vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title,
+            },
+            async () => {
+                return await uploadContent(node, doc, remotePath, profile, binary, null, returnEtag);
             }
-        });
+        );
+        if (uploadResponse.success) {
+            await vscode.window.showInformationMessage(uploadResponse.commandResponse);
+            if (node) {
+                node.setEtag(uploadResponse.apiResponse[0].etag);
+            }
+        }
+    } else {
+        await vscode.window.showInformationMessage("Upload cancelled.");
+        await markFileAsDirty(doc);
+    }
 }
 
 // Type guarding for current IZoweNodeType.

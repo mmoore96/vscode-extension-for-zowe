@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * This program and the accompanying materials are made available under the terms of the *
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at *
@@ -219,9 +218,9 @@ export class Job extends ZoweTreeNode implements IZoweJobTreeNode {
                 return `${this.job.jobname}(${this.job.jobid})`;
             }
         } else if (this.searchId.length > 0) {
-            return `${this.label} - job id: ${this.searchId}`;
+            return `${this.label.toString()} - job id: ${this.searchId}`;
         } else {
-            return `${this.label} - owner: ${this.owner} prefix: ${this.prefix}`;
+            return `${this.label.toString()} - owner: ${this.owner} prefix: ${this.prefix}`;
         }
     }
 
@@ -292,7 +291,7 @@ export class Job extends ZoweTreeNode implements IZoweJobTreeNode {
             } catch (error) {
                 await errorHandling(
                     error,
-                    this.label,
+                    this.label.toString(),
                     localize("getChildren.error.response", "Retrieving response from ") + `zowe.GetJobs`
                 );
                 await syncSessionNode(Profiles.getInstance())((profileValue) =>
@@ -306,7 +305,7 @@ export class Job extends ZoweTreeNode implements IZoweJobTreeNode {
 
 // tslint:disable-next-line: max-classes-per-file
 class Spool extends Job {
-    constructor(
+    public constructor(
         label: string,
         mCollapsibleState: vscode.TreeItemCollapsibleState,
         mParent: IZoweJobTreeNode,

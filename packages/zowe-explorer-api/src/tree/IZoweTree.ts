@@ -176,7 +176,7 @@ export interface IZoweTree<T> extends vscode.TreeDataProvider<T> {
      * Adds a search history element to persisted settings.
      * @param node: the root node representing the operation
      */
-    addSearchHistory(element: string);
+    addSearchHistory(element: string): Promise<void>;
     /**
      * Retrieves search history elements from persisted settings.
      */
@@ -190,7 +190,7 @@ export interface IZoweTree<T> extends vscode.TreeDataProvider<T> {
      * Deletes a root node from the tree.
      * @param node: A root node representing a session
      */
-    deleteSession(node: IZoweNodeType): any;
+    deleteSession(node: IZoweNodeType): Promise<void>;
     /**
      * Lets the user open a dataset by filtering the currently-loaded list
      */

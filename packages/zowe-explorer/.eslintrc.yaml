@@ -14,6 +14,7 @@ extends:
   - prettier
 rules:
   "@typescript-eslint/no-namespace": off
+  "@typescript-eslint/no-shadow": error
   "@typescript-eslint/explicit-function-return-type": warn # error -> warn
   "@typescript-eslint/explicit-member-accessibility": error
   "@typescript-eslint/member-ordering": warn
@@ -30,5 +31,5 @@ rules:
     - warn # error -> warn
     - max: 20 # Updated 15 -> 20
   no-implicit-globals: error
-  # require-await: error # Removed since it;s already part of the typescript-eslint/recommended
-  no-shadow: error
+  # require-await: error # Removed since it is part of the @typescript-eslint/recommended
+  # no-shadow: error # Replaced by @typescript-eslint/no-shadow

@@ -95,7 +95,7 @@ export class Profiles extends ProfilesCache {
         let profileStatus: IProfileValidation;
         if (!theProfile.profile.tokenType && (!theProfile.profile.user || !theProfile.profile.password)) {
             // The profile will need to be reactivated, so remove it from profilesForValidation
-            this.profilesForValidation.filter((profile, index) => {
+            this.profilesForValidation.forEach((profile, index) => {
                 if (profile.name === theProfile.name && profile.status !== "unverified") {
                     this.profilesForValidation.splice(index, 1);
                 }
@@ -141,14 +141,14 @@ export class Profiles extends ProfilesCache {
     public async getProfileSetting(theProfile: IProfileLoaded): Promise<IProfileValidation> {
         let profileStatus: IProfileValidation;
         let found = false;
-        this.profilesValidationSetting.filter(async (instance) => {
+        this.profilesValidationSetting.forEach((instance) => {
             if (instance.name === theProfile.name && instance.setting === false) {
                 profileStatus = {
                     status: "unverified",
                     name: instance.name,
                 };
                 if (this.profilesForValidation.length > 0) {
-                    this.profilesForValidation.filter((profile) => {
+                    this.profilesForValidation.forEach((profile) => {
                         if (profile.name === theProfile.name && profile.status === "unverified") {
                             found = true;
                         }
@@ -216,7 +216,7 @@ export class Profiles extends ProfilesCache {
         let found = false;
         let profileSetting: IValidationSetting;
         if (this.profilesValidationSetting.length > 0) {
-            this.profilesValidationSetting.filter((instance) => {
+            this.profilesValidationSetting.forEach((instance) => {
                 if (instance.name === theProfile.name && instance.setting === validationSetting) {
                     found = true;
                     profileSetting = {
@@ -274,18 +274,12 @@ export class Profiles extends ProfilesCache {
         // Filter to list of the APIs available for current tree explorer
         profileNamesList = profileNamesList.filter((profileName) => {
             const profile = Profiles.getInstance().loadNamedProfile(profileName);
-            if (zoweFileProvider.getTreeType() === PersistenceSchemaEnum.USS) {
-                const ussProfileTypes = ZoweExplorerApiRegister.getInstance().registeredUssApiTypes();
-                return ussProfileTypes.includes(profile.type);
-            }
-            if (zoweFileProvider.getTreeType() === PersistenceSchemaEnum.Dataset) {
-                const mvsProfileTypes = ZoweExplorerApiRegister.getInstance().registeredMvsApiTypes();
-                return mvsProfileTypes.includes(profile.type);
-            }
-            if (zoweFileProvider.getTreeType() === PersistenceSchemaEnum.Job) {
-                const jesProfileTypes = ZoweExplorerApiRegister.getInstance().registeredJesApiTypes();
-                return jesProfileTypes.includes(profile.type);
-            }
+            const register = ZoweExplorerApiRegister.getInstance();
+            const type = zoweFileProvider.getTreeType();
+
+            return (type === PersistenceSchemaEnum.USS && register.registeredUssApiTypes().includes(profile.type)) ||
+                (type === PersistenceSchemaEnum.Dataset && register.registeredMvsApiTypes().includes(profile.type)) ||
+                (type === PersistenceSchemaEnum.Job && register.registeredJesApiTypes().includes(profile.type));
         });
         profileNamesList = profileNamesList.filter(
             (profileName) =>
@@ -983,13 +977,13 @@ export class Profiles extends ProfilesCache {
         datasetTree.removeFavProfile(deleteLabel, false);
 
         // Delete from Data Set Tree
-        datasetTree.mSessionNodes.forEach((sessNode) => {
+        for (const sessNode of datasetTree.mSessionNodes) {
             if (sessNode.getProfileName() === deleteLabel) {
-                datasetTree.deleteSession(sessNode);
+                await datasetTree.deleteSession(sessNode);
                 sessNode.dirty = true;
                 datasetTree.refresh();
             }
-        });
+        }
 
         // Delete from USS file history
         const fileHistoryUSS: string[] = ussTree.getFileHistory().slice().reverse()
@@ -1002,25 +996,25 @@ export class Profiles extends ProfilesCache {
         ussTree.removeFavProfile(deleteLabel, false);
 
         // Delete from USS Tree
-        ussTree.mSessionNodes.forEach((sessNode) => {
+        for (const sessNode of ussTree.mSessionNodes) {
             if (sessNode.getProfileName() === deleteLabel) {
-                ussTree.deleteSession(sessNode);
+                await ussTree.deleteSession(sessNode);
                 sessNode.dirty = true;
                 ussTree.refresh();
             }
-        });
+        }
 
         // Delete from Jobs Favorites
         jobsProvider.removeFavProfile(deleteLabel, false);
 
         // Delete from Jobs Tree
-        jobsProvider.mSessionNodes.forEach((jobNode) => {
+        for (const jobNode of jobsProvider.mSessionNodes) {
             if (jobNode.getProfileName() === deleteLabel) {
-                jobsProvider.deleteSession(jobNode);
+                await jobsProvider.deleteSession(jobNode);
                 jobNode.dirty = true;
                 jobsProvider.refresh();
             }
-        });
+        }
 
         // Delete from Data Set Sessions list
         const dsSetting: any = {

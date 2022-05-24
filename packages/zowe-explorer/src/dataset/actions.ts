@@ -31,6 +31,7 @@ import { IUploadOptions } from "@zowe/zos-files-for-zowe-sdk";
 
 // Set up localization
 import * as nls from "vscode-nls";
+import { ZoweVsCodeExtension } from "@zowe/zowe-explorer-api";
 nls.config({
     messageFormat: nls.MessageFormat.bundle,
     bundleFormat: nls.BundleFormat.standalone,
@@ -70,7 +71,7 @@ export async function allocateLike(
         quickpick.show();
         const selection = await resolveQuickPickHelper(quickpick);
         if (!selection) {
-            vscode.window.showInformationMessage(localize("allocateLike.noSelection", "You must select a profile."));
+            await vscode.window.showInformationMessage(localize("allocateLike.noSelection", "You must select a profile."));
             return;
         } else {
             currSession = datasetProvider.mSessionNodes.find((thisSession) => thisSession.label === selection.label);
@@ -91,9 +92,9 @@ export async function allocateLike(
             ),
             value: currSelection as string,
         };
-        likeDSName = await UIViews.inputBox(inputBoxOptions);
+        likeDSName = await ZoweVsCodeExtension.inputBox(inputBoxOptions);
         if (!likeDSName) {
-            vscode.window.showInformationMessage(
+            await vscode.window.showInformationMessage(
                 localize("allocateLike.noNewName", "You must enter a new data set name.")
             );
             return;
@@ -109,9 +110,9 @@ export async function allocateLike(
         ignoreFocusOut: true,
         placeHolder: localize("allocateLike.inputBox.placeHolder", "Enter a name for the new data set"),
     };
-    const newDSName = await UIViews.inputBox(options);
+    const newDSName = await ZoweVsCodeExtension.inputBox(options);
     if (!newDSName) {
-        vscode.window.showInformationMessage(localize("allocateLike.noNewName", "You must enter a new data set name."));
+        await vscode.window.showInformationMessage(localize("allocateLike.noNewName", "You must enter a new data set name."));
         return;
     } else {
         // Allocate the data set, or throw an error
@@ -138,7 +139,7 @@ export async function allocateLike(
     }
     const theFilter = await datasetProvider.createFilterString(newDSName, currSession);
     currSession.tooltip = currSession.pattern = theFilter.toUpperCase();
-    datasetProvider.addSearchHistory(theFilter);
+    await datasetProvider.addSearchHistory(theFilter);
     datasetProvider.refresh();
     currSession.dirty = true;
     datasetProvider.refreshElement(currSession);
@@ -146,7 +147,7 @@ export async function allocateLike(
         (child) => child.label.toString() === newDSName.toUpperCase()
     );
     await datasetProvider.getTreeView().reveal(currSession, { select: true, focus: true });
-    datasetProvider.getTreeView().reveal(newNode, { select: true, focus: true });
+    await datasetProvider.getTreeView().reveal(newNode, { select: true, focus: true });
 }
 
 export async function uploadDialog(node: ZoweDatasetNode, datasetProvider: api.IZoweTree<api.IZoweDatasetTreeNode>) {
@@ -181,7 +182,7 @@ export async function uploadDialog(node: ZoweDatasetNode, datasetProvider: api.I
             }
         }
     } else {
-        vscode.window.showInformationMessage(
+        await vscode.window.showInformationMessage(
             localize("enterPattern.pattern", "No selection made. Operation cancelled.")
         );
     }
@@ -261,7 +262,7 @@ export async function deleteDatasetPrompt(
 
     // Check that there are items to be deleted, this can be caused by trying to delete favorites right now
     if (!nodes || nodes.length === 0) {
-        vscode.window.showInformationMessage(
+        await vscode.window.showInformationMessage(
             localize(
                 "deleteDatasetPrompt.nodesToDelete.empty",
                 "Deleting data sets and members from the Favorites section is currently not supported."
@@ -339,7 +340,7 @@ export async function deleteDatasetPrompt(
                 const total = 100;
                 for (const [index, currNode] of nodes.entries()) {
                     if (token.isCancellationRequested) {
-                        vscode.window.showInformationMessage(
+                        await vscode.window.showInformationMessage(
                             localize("deleteDatasetPrompt.deleteCancelled", "Delete action was cancelled.")
                         );
                         return;
@@ -363,7 +364,7 @@ export async function deleteDatasetPrompt(
     }
     if (nodesDeleted.length > 0) {
         nodesDeleted.sort();
-        vscode.window.showInformationMessage(
+        await vscode.window.showInformationMessage(
             localize(
                 "deleteMulti.datasetNode",
                 "The following {0} item(s) were deleted:{1}",
@@ -394,7 +395,7 @@ export async function createMember(
     const options: vscode.InputBoxOptions = {
         placeHolder: localize("createMember.inputBox.placeholder", "Name of Member"),
     };
-    const name = await UIViews.inputBox(options);
+    const name = await ZoweVsCodeExtension.inputBox(options);
     globals.LOG.debug(
         localize("createMember.log.debug.createNewDataSet", "creating new data set member of name ") + name
     );
@@ -411,7 +412,7 @@ export async function createMember(
         }
         parent.dirty = true;
         datasetProvider.refreshElement(parent);
-        openPS(
+        await openPS(
             new ZoweDatasetNode(
                 name,
                 vscode.TreeItemCollapsibleState.None,
@@ -456,7 +457,7 @@ export async function openPS(
                     label = node.getParent().getLabel().toString() + "(" + node.getLabel().toString() + ")";
                     break;
                 default:
-                    vscode.window.showErrorMessage(
+                    await vscode.window.showErrorMessage(
                         localize("openPS.invalidNode", "openPS() called from invalid node.")
                     );
                     throw Error(localize("openPS.error.invalidNode", "openPS() called from invalid node. "));
@@ -581,7 +582,7 @@ export async function createFile(
             placeHolder: localize("createFile.inputBox.placeHolder", "Name of Data Set"),
             ignoreFocusOut: true,
         };
-        dsName = await UIViews.inputBox(options);
+        dsName = await ZoweVsCodeExtension.inputBox(options);
         if (dsName) {
             dsName = dsName.trim().toUpperCase();
             newDSProperties.forEach((property) => {
@@ -594,7 +595,7 @@ export async function createFile(
             globals.LOG.debug(
                 localize("createFile.noValidNameEntered", "No valid data set name entered. Operation cancelled")
             );
-            vscode.window.showInformationMessage(localize("createFile.operationCancelled", "Operation cancelled."));
+            await vscode.window.showInformationMessage(localize("createFile.operationCancelled", "Operation cancelled."));
             return;
         }
 
@@ -604,7 +605,7 @@ export async function createFile(
             globals.LOG.debug(
                 localize("createFile.noValidTypeSelected", "No valid data set type selected. Operation cancelled.")
             );
-            vscode.window.showInformationMessage(localize("createFile.operationCancelled", "Operation cancelled."));
+            await vscode.window.showInformationMessage(localize("createFile.operationCancelled", "Operation cancelled."));
             return;
         } else {
             // Add the default property values to the list of items
@@ -627,13 +628,13 @@ export async function createFile(
         const choice = await vscode.window.showQuickPick(stepThreeChoices, stepThreeOptions);
         if (choice == null) {
             globals.LOG.debug(localize("createFile.noOptionSelected", "No option selected. Operation cancelled."));
-            vscode.window.showInformationMessage(localize("createFile.operationCancelled", "Operation cancelled."));
+            await vscode.window.showInformationMessage(localize("createFile.operationCancelled", "Operation cancelled."));
             return;
         } else {
             if (choice === " + Allocate Data Set") {
                 // User wants to allocate straightaway - skip Step 4
                 globals.LOG.debug(localize("createFile.allocatingNewDataSet", "Allocating new data set"));
-                vscode.window.showInformationMessage(
+                await vscode.window.showInformationMessage(
                     localize("createFile.allocatingNewDataSet", "Allocating new data set")
                 );
             } else {
@@ -643,7 +644,7 @@ export async function createFile(
                     globals.LOG.debug(
                         localize("createFile.noOptionSelected", "No option selected. Operation cancelled.")
                     );
-                    vscode.window.showInformationMessage(
+                    await vscode.window.showInformationMessage(
                         localize("createFile.operationCancelled", "Operation cancelled.")
                     );
                     return;
@@ -677,7 +678,7 @@ export async function createFile(
             node.dirty = true;
 
             const theFilter = await datasetProvider.createFilterString(dsName, node);
-            datasetProvider.addSearchHistory(theFilter);
+            await datasetProvider.addSearchHistory(theFilter);
             datasetProvider.refresh();
 
             // Show newly-created data set in expanded tree view
@@ -690,13 +691,9 @@ export async function createFile(
                 }
                 node.dirty = true;
 
-                const newNode = await node
-                    .getChildren()
-                    .then((children) => children.find((child) => child.label === dsName));
-                datasetProvider
-                    .getTreeView()
-                    .reveal(node, { select: true, focus: true })
-                    .then(() => datasetProvider.getTreeView().reveal(newNode, { select: true, focus: true }));
+                const newNode = (await node.getChildren()).find((child) => child.label === dsName);
+                await datasetProvider.getTreeView().reveal(node, { select: true, focus: true });
+                await datasetProvider.getTreeView().reveal(newNode, { select: true, focus: true });
             }
         } catch (err) {
             globals.LOG.error(
@@ -729,16 +726,15 @@ async function handleUserSelection(newDSProperties, dsType): Promise<string> {
     quickpick.onDidHide(() => {
         if (quickpick.selectedItems.length === 0) {
             globals.LOG.debug(localize("createFile.noOptionSelected", "No option selected. Operation cancelled."));
-            vscode.window.showInformationMessage(localize("createFile.operationCancelled", "Operation cancelled."));
+            await vscode.window.showInformationMessage(localize("createFile.operationCancelled", "Operation cancelled."));
             return;
         }
     });
 
     // Show quickpick and store the user's input
     quickpick.show();
-    let pattern: string;
     const choice2 = await resolveQuickPickHelper(quickpick);
-    pattern = choice2.label;
+    const pattern = choice2.label;
     quickpick.dispose();
 
     if (pattern) {
@@ -746,13 +742,14 @@ async function handleUserSelection(newDSProperties, dsType): Promise<string> {
         switch (pattern) {
             case " + Allocate Data Set":
                 return new Promise((resolve) => resolve(` + Allocate Data Set`));
-            default:
+            default: {
                 const options: vscode.InputBoxOptions = {
                     value: newDSProperties.find((prop) => prop.label === pattern).value,
                     placeHolder: newDSProperties.find((prop) => prop.label === pattern).placeHolder,
                 };
-                newDSProperties.find((prop) => prop.label === pattern).value = await UIViews.inputBox(options);
+                newDSProperties.find((prop) => prop.label === pattern).value = await ZoweVsCodeExtension.inputBox(options);
                 break;
+            }
         }
         return Promise.resolve(handleUserSelection(newDSProperties, dsType));
     }
@@ -844,7 +841,7 @@ export async function showDSAttributes(
 // This function does not appear to currently be made available in the UI
 export async function submitJcl(datasetProvider: api.IZoweTree<api.IZoweDatasetTreeNode>) {
     if (!vscode.window.activeTextEditor) {
-        vscode.window.showErrorMessage(
+        await vscode.window.showErrorMessage(
             localize(
                 "submitJcl.noDocumentOpen",
                 "No editor with a document that could be submitted as JCL is currently open."
@@ -872,7 +869,7 @@ export async function submitJcl(datasetProvider: api.IZoweTree<api.IZoweDatasetT
             };
             sessProfileName = await vscode.window.showQuickPick(profileNamesList, quickPickOptions);
         } else {
-            vscode.window.showInformationMessage(localize("submitJcl.noProfile", "No profiles available"));
+            await vscode.window.showInformationMessage(localize("submitJcl.noProfile", "No profiles available"));
         }
     } else {
         sessProfileName = regExp[1];
@@ -903,7 +900,7 @@ export async function submitJcl(datasetProvider: api.IZoweTree<api.IZoweDatasetT
             const job = await ZoweExplorerApiRegister.getJesApi(sessProfile).submitJcl(doc.getText());
             const args = [sessProfileName, job.jobid];
             const setJobCmd = `command:zowe.jobs.setJobSpool?${encodeURIComponent(JSON.stringify(args))}`;
-            vscode.window.showInformationMessage(
+            await vscode.window.showInformationMessage(
                 localize("submitJcl.jobSubmitted", "Job submitted ") + `[${job.jobid}](${setJobCmd})`
             );
         } catch (error) {
@@ -914,7 +911,7 @@ export async function submitJcl(datasetProvider: api.IZoweTree<api.IZoweDatasetT
             );
         }
     } else {
-        vscode.window.showErrorMessage(localize("submitJcl.checkProfile", "Profile is invalid"));
+        await vscode.window.showErrorMessage(localize("submitJcl.checkProfile", "Profile is invalid"));
         return;
     }
 }
@@ -948,7 +945,7 @@ export async function submitMember(node: api.IZoweTreeNode) {
                 sessProfile = node.getProfile();
                 break;
             default:
-                vscode.window.showErrorMessage(
+                await vscode.window.showErrorMessage(
                     localize("submitMember.invalidNode", "submitMember() called from invalid node.")
                 );
                 throw Error(localize("submitMember.error.invalidNode", "submitMember() called from invalid node."));
@@ -957,7 +954,7 @@ export async function submitMember(node: api.IZoweTreeNode) {
             const job = await ZoweExplorerApiRegister.getJesApi(sessProfile).submitJob(label);
             const args = [sesName, job.jobid];
             const setJobCmd = `command:zowe.jobs.setJobSpool?${encodeURIComponent(JSON.stringify(args))}`;
-            vscode.window.showInformationMessage(
+            await vscode.window.showInformationMessage(
                 localize("submitMember.jobSubmitted", "Job submitted ") + `[${job.jobid}](${setJobCmd})`
             );
         } catch (error) {
@@ -1007,7 +1004,7 @@ export async function deleteDataset(node: api.IZoweTreeNode, datasetProvider: ap
             JSON.stringify(err)
         );
         if (err.message.includes(localize("deleteDataSet.error.notFound", "not found"))) {
-            vscode.window.showInformationMessage(
+            await vscode.window.showInformationMessage(
                 localize("deleteDataSet.notFound.error1", "Unable to find file: ") +
                 label +
                 localize("deleteDataSet.notFound.error2", " was probably already deleted.")
@@ -1076,11 +1073,11 @@ export async function refreshPS(node: api.IZoweDatasetTreeNode) {
         node.setEtag(response.apiResponse.etag);
 
         const document = await vscode.workspace.openTextDocument(documentFilePath);
-        vscode.window.showTextDocument(document);
+        await vscode.window.showTextDocument(document);
         // if there are unsaved changes, vscode won't automatically display the updates, so close and reopen
         if (document.isDirty) {
             await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
-            vscode.window.showTextDocument(document);
+            await vscode.window.showTextDocument(document);
         }
     } catch (err) {
         globals.LOG.error(
@@ -1088,7 +1085,7 @@ export async function refreshPS(node: api.IZoweDatasetTreeNode) {
             JSON.stringify(err)
         );
         if (err.message.includes(localize("refreshPS.error.notFound", "not found"))) {
-            vscode.window.showInformationMessage(
+            await vscode.window.showInformationMessage(
                 localize("refreshPS.file1", "Unable to find file: ") +
                 label +
                 localize("refreshPS.file2", " was probably deleted.")
@@ -1140,9 +1137,9 @@ export async function enterPattern(node: api.IZoweDatasetTreeNode, datasetProvid
             value: node.pattern,
         };
         // get user input
-        pattern = await UIViews.inputBox(options);
+        pattern = await ZoweVsCodeExtension.inputBox(options);
         if (!pattern) {
-            vscode.window.showInformationMessage(localize("enterPattern.pattern", "You must enter a pattern."));
+            await vscode.window.showInformationMessage(localize("enterPattern.pattern", "You must enter a pattern."));
             return;
         }
     } else {
@@ -1166,7 +1163,7 @@ export async function enterPattern(node: api.IZoweDatasetTreeNode, datasetProvid
     if (icon) {
         node.iconPath = icon.path;
     }
-    datasetProvider.addSearchHistory(node.pattern);
+    await datasetProvider.addSearchHistory(node.pattern);
 }
 
 /**
@@ -1266,7 +1263,7 @@ export async function pasteMember(
                 value: beforeMemberName,
                 placeHolder: localize("pasteMember.inputBox.placeHolder", "Name of Data Set Member"),
             };
-            memberName = await UIViews.inputBox(inputBoxOptions);
+            memberName = await ZoweVsCodeExtension.inputBox(inputBoxOptions);
             if (!memberName) {
                 return;
             }

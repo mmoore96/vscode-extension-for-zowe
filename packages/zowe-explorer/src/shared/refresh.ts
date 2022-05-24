@@ -34,7 +34,7 @@ export async function refreshAll(treeProvider: IZoweTree<IZoweTreeNode>): Promis
             labelRefresh(sessNode);
             sessNode.children = [];
             sessNode.dirty = true;
-            await resetValidationSettings(sessNode, setting);
+            resetValidationSettings(sessNode, setting);
             returnIconState(sessNode);
             await syncSessionNode(Profiles.getInstance())((profileValue) =>
                 ZoweExplorerApiRegister.getCommonApi(profileValue).getSession()

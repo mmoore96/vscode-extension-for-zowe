@@ -127,9 +127,9 @@ export async function searchInAllLoadedItems(
 
             if (node.contextValue !== globals.USS_DIR_CONTEXT) {
                 // If selected item is file, open it in workspace
-                ussFileProvider.addSearchHistory(node.fullPath);
+                await ussFileProvider.addSearchHistory(node.fullPath);
                 const ussNode: IZoweUSSTreeNode = node;
-                ussNode.openUSS(false, true, ussFileProvider);
+                await ussNode.openUSS(false, true, ussFileProvider);
             }
         } else {
             // Data set nodes
@@ -146,7 +146,7 @@ export async function searchInAllLoadedItems(
                 await datasetProvider.getTreeView().reveal(member, { select: true, focus: true, expand: false });
 
                 // Open in workspace
-                datasetProvider.addSearchHistory(`${nodeName}(${memberName})`);
+                await datasetProvider.addSearchHistory(`${nodeName}(${memberName})`);
                 await openPS(member, true, datasetProvider);
             } else {
                 // PDS & SDS
@@ -154,7 +154,7 @@ export async function searchInAllLoadedItems(
 
                 // If selected node was SDS, open it in workspace
                 if (contextually.isDs(node)) {
-                    datasetProvider.addSearchHistory(nodeName);
+                    await datasetProvider.addSearchHistory(nodeName);
                     await openPS(node, true, datasetProvider);
                 }
             }
@@ -203,7 +203,7 @@ export async function openRecentMemberPrompt(
             const choice = await resolveQuickPickHelper(quickpick);
             quickpick.hide();
             if (!choice || choice === createPick) {
-                vscode.window.showInformationMessage(
+                await vscode.window.showInformationMessage(
                     localize("enterPattern.pattern", "No selection made. Operation cancelled.")
                 );
                 return;
@@ -233,7 +233,7 @@ export async function openRecentMemberPrompt(
             await datasetTree.openItemFromPath(pattern, sessionNode);
         }
     } else {
-        vscode.window.showInformationMessage(localize("getRecentMembers.empty", "No recent members found."));
+        await vscode.window.showInformationMessage(localize("getRecentMembers.empty", "No recent members found."));
         return;
     }
 }
@@ -255,13 +255,13 @@ export function returnIconState(node: IZoweNodeType): IZoweNodeType {
     return node;
 }
 
-export async function resetValidationSettings(node: IZoweNodeType, setting: boolean) {
+export function resetValidationSettings(node: IZoweNodeType, setting: boolean): IZoweNodeType {
     if (setting) {
-        await Profiles.getInstance().enableValidationContext(node);
+        Profiles.getInstance().enableValidationContext(node);
         // Ensure validation status is also reset
         node.contextValue = node.contextValue.replace(/(_Active)/g, "").replace(/(_Inactive)/g, "");
     } else {
-        await Profiles.getInstance().disableValidationContext(node);
+        Profiles.getInstance().disableValidationContext(node);
     }
     return node;
 }

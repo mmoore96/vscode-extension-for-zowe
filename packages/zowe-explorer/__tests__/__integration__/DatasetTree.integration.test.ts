@@ -202,7 +202,7 @@ describe("DatasetTree Integration Tests", async () => {
      *************************************************************************************************************/
     it("Tests the deleteSession() function", async () => {
         const len = testTree.mSessionNodes.length;
-        testTree.deleteSession(sessNode);
+        await testTree.deleteSession(sessNode);
         expect(testTree.mSessionNodes.length).toEqual(len - 1);
     });
 
@@ -213,7 +213,7 @@ describe("DatasetTree Integration Tests", async () => {
         let len: number;
         for (const sess of testTree.mSessionNodes) {
             if (sess.contextValue === globals.DS_SESSION_CONTEXT) {
-                testTree.deleteSession(sess);
+                await testTree.deleteSession(sess);
             }
         }
         len = testTree.mSessionNodes.length;
@@ -222,7 +222,7 @@ describe("DatasetTree Integration Tests", async () => {
         len = testTree.mSessionNodes.length;
         for (const sess of testTree.mSessionNodes) {
             if (sess.contextValue === globals.DS_SESSION_CONTEXT) {
-                testTree.deleteSession(sess);
+                await testTree.deleteSession(sess);
             }
         }
         await testTree.addSession(testConst.profile.name);

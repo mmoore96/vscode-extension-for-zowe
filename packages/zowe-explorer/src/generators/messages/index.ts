@@ -48,7 +48,7 @@ function mergeMessages(generic: { [index: string]: string }, specific: { [index:
 
         if (specific) {
             for (const key in specific) {
-                if (specific.hasOwnProperty(key)) {
+                if (specific[key]) {
                     result[key] = specific[key];
                 }
             }

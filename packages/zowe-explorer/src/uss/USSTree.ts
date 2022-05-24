@@ -317,7 +317,7 @@ export class USSTree extends ZoweTreeProvider implements IZoweTree<IZoweUSSTreeN
                 for (const node of this.mSessionNodes) {
                     const name = node.getProfileName();
                     if (name === profile.name) {
-                        await resetValidationSettings(node, setting);
+                        resetValidationSettings(node, setting);
                     }
                 }
             }
@@ -334,7 +334,7 @@ export class USSTree extends ZoweTreeProvider implements IZoweTree<IZoweUSSTreeN
                         for (const node of this.mSessionNodes) {
                             const name = node.getProfileName();
                             if (name === theProfile.name) {
-                                await resetValidationSettings(node, setting);
+                                resetValidationSettings(node, setting);
                             }
                         }
                     }
@@ -868,7 +868,7 @@ export class USSTree extends ZoweTreeProvider implements IZoweTree<IZoweUSSTreeN
      * Opens a USS item & reveals it in the tree
      *
      */
-    public async openItemFromPath(itemPath: string, sessionNode: IZoweUSSTreeNode) {
+    public async openItemFromPath(itemPath: string, sessionNode: IZoweUSSTreeNode): Promise<void> {
         // USS file was selected
         const nodePath = itemPath
             .substring(itemPath.indexOf("/") + 1)
@@ -881,15 +881,15 @@ export class USSTree extends ZoweTreeProvider implements IZoweTree<IZoweUSSTreeN
         sessionNode.tooltip = sessionNode.fullPath = `/${nodePath.slice(0, nodePath.length - 1).join("/")}`;
         sessionNode.label = `${sessionNode.getProfileName()} [/${nodePath.join("/")}]`;
         sessionNode.dirty = true;
-        this.addSearchHistory(`[${sessionNode.getProfileName()}]: /${nodePath.join("/")}`);
+        await this.addSearchHistory(`[${sessionNode.getProfileName()}]: /${nodePath.join("/")}`);
         await sessionNode.getChildren();
 
         // Reveal the searched item in the tree
         const selectedNode: IZoweUSSTreeNode = sessionNode.children.find((elt) => elt.label === selectedNodeName);
         if (selectedNode) {
-            selectedNode.openUSS(false, true, this);
+            await selectedNode.openUSS(false, true, this);
         } else {
-            vscode.window.showInformationMessage(
+            await vscode.window.showInformationMessage(
                 localize("findUSSItem.unsuccessful", "File does not exist. It may have been deleted.")
             );
             await this.removeFileHistory(`[${sessionNode.getProfileName()}]: ${itemPath}`);
@@ -949,7 +949,7 @@ export class USSTree extends ZoweTreeProvider implements IZoweTree<IZoweUSSTreeN
             }
             node.dirty = true;
             this.mSessionNodes.push(node);
-            this.mHistory.addSession(profile.name);
+            await this.mHistory.addSession(profile.name);
         }
     }
 }

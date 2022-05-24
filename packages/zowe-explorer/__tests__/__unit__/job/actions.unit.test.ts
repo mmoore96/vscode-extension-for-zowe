@@ -896,7 +896,7 @@ describe("Jobs Actions Unit Tests - Function refreshJobsServer", () => {
         job.contextValue = globals.JOBS_SESSION_CONTEXT;
         mocked(zowe.ZosmfSession.createSessCfgFromArgs).mockReturnValueOnce(blockMocks.session.ISession);
 
-        await jobActions.refreshJobsServer(job, blockMocks.testJobTree);
+        jobActions.refreshJobsServer(job, blockMocks.testJobTree);
 
         expect(blockMocks.testJobTree.checkCurrentProfile).toHaveBeenCalledWith(job);
         expect(blockMocks.testJobTree.refreshElement).toHaveBeenCalledWith(job);
@@ -928,7 +928,7 @@ describe("Jobs Actions Unit Tests - Function refreshJobsServer", () => {
         job.contextValue = globals.JOBS_SESSION_CONTEXT;
         mocked(zowe.ZosmfSession.createSessCfgFromArgs).mockReturnValueOnce(blockMocks.session.ISession);
 
-        await jobActions.refreshJobsServer(job, blockMocks.testJobTree);
+        jobActions.refreshJobsServer(job, blockMocks.testJobTree);
 
         expect(blockMocks.testJobTree.checkCurrentProfile).toHaveBeenCalledWith(job);
         expect(blockMocks.testJobTree.refreshElement).toHaveBeenCalledWith(job);
@@ -953,7 +953,7 @@ describe("Jobs Actions Unit Tests - Function refreshJobsServer", () => {
         });
 
         try {
-            await jobActions.refreshJobsServer(job, blockMocks.testJobTree);
+            jobActions.refreshJobsServer(job, blockMocks.testJobTree);
         } catch (err) {
             expect(err).toEqual(Error("test"));
         }
@@ -977,7 +977,7 @@ describe("Jobs Actions Unit Tests - Function refreshJobsServer", () => {
         job.contextValue = globals.JOBS_SESSION_CONTEXT;
         mocked(zowe.ZosmfSession.createSessCfgFromArgs).mockReturnValueOnce(blockMocks.session.ISession);
 
-        await jobActions.refreshJobsServer(job, blockMocks.testJobTree);
+        jobActions.refreshJobsServer(job, blockMocks.testJobTree);
 
         expect(blockMocks.testJobTree.checkCurrentProfile).toHaveBeenCalledWith(job);
         expect(blockMocks.testJobTree.refreshElement).toHaveBeenCalledWith(job);
@@ -999,7 +999,7 @@ describe("Jobs Actions Unit Tests - Function refreshJobsServer", () => {
         job.contextValue = globals.JOBS_SESSION_CONTEXT + globals.FAV_SUFFIX;
         mocked(zowe.ZosmfSession.createSessCfgFromArgs).mockReturnValueOnce(blockMocks.session.ISession);
 
-        await jobActions.refreshJobsServer(job, blockMocks.testJobTree);
+        jobActions.refreshJobsServer(job, blockMocks.testJobTree);
 
         expect(blockMocks.testJobTree.checkCurrentProfile).toHaveBeenCalledWith(job);
         expect(blockMocks.testJobTree.refreshElement).toHaveBeenCalledWith(job);

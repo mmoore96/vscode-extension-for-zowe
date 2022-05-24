@@ -26,6 +26,7 @@ import {
     IZoweTreeNode,
     IZoweTree,
     getZoweDir,
+    ZoweVsCodeExtension,
 } from "@zowe/zowe-explorer-api";
 import { ZoweExplorerApiRegister } from "./ZoweExplorerApiRegister";
 import { ZoweExplorerExtender } from "./ZoweExplorerExtender";
@@ -139,7 +140,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<ZoweEx
             let profileName: string;
             if (node == null) {
                 // prompt for profile
-                profileName = await UIViews.inputBox({
+                profileName = await ZoweVsCodeExtension.inputBox({
                     placeHolder: localize(
                         "createNewConnection.option.prompt.profileName.placeholder",
                         "Connection Name"
@@ -503,7 +504,7 @@ function initUSSProvider(context: vscode.ExtensionContext, ussFileProvider: IZow
     );
     context.subscriptions.push(
         vscode.commands.registerCommand("zowe.uss.removeSession", async (node: IZoweUSSTreeNode) =>
-            ussFileProvider.deleteSession(node)
+            await ussFileProvider.deleteSession(node)
         )
     );
     context.subscriptions.push(
@@ -613,7 +614,7 @@ function initJobsProvider(context: vscode.ExtensionContext, jobsProvider: IZoweT
         vscode.commands.registerCommand("zowe.jobs.runStopCommand", (job) => jobActions.stopCommand(job))
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.jobs.refreshJobsServer", async (job) =>
+        vscode.commands.registerCommand("zowe.jobs.refreshJobsServer", (job) =>
             jobActions.refreshJobsServer(job, jobsProvider)
         )
     );
@@ -636,7 +637,7 @@ function initJobsProvider(context: vscode.ExtensionContext, jobsProvider: IZoweT
         vscode.commands.registerCommand("zowe.jobs.setPrefix", (job) => jobActions.setPrefix(job, jobsProvider))
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.jobs.removeJobsSession", (job) => jobsProvider.deleteSession(job))
+        vscode.commands.registerCommand("zowe.jobs.removeJobsSession", async (job) => await jobsProvider.deleteSession(job))
     );
     context.subscriptions.push(
         vscode.commands.registerCommand("zowe.jobs.downloadSpool", (job) => jobActions.downloadSpool(job))

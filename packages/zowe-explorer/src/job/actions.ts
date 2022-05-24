@@ -14,7 +14,7 @@ import * as zowe from "@zowe/cli";
 import { errorHandling } from "../utils/ProfilesUtils";
 import { Profiles } from "../Profiles";
 import { ZoweExplorerApiRegister } from "../ZoweExplorerApiRegister";
-import { ValidProfileEnum, IZoweTree, IZoweJobTreeNode } from "@zowe/zowe-explorer-api";
+import { ValidProfileEnum, IZoweTree, IZoweJobTreeNode, ZoweVsCodeExtension } from "@zowe/zowe-explorer-api";
 import { Job } from "./ZoweJobNode";
 import * as nls from "vscode-nls";
 import { toUniqueJobFileUri } from "../SpoolProvider";
@@ -44,7 +44,7 @@ export async function downloadSpool(job: IZoweJobTreeNode) {
             canSelectMany: false,
         });
         if (dirUri !== undefined) {
-            ZoweExplorerApiRegister.getJesApi(job.getProfile()).downloadSpoolContent({
+            await ZoweExplorerApiRegister.getJesApi(job.getProfile()).downloadSpoolContent({
                 jobid: job.job.jobid,
                 jobname: job.job.jobname,
                 outDir: dirUri[0].fsPath,
@@ -95,13 +95,13 @@ export async function getSpoolContent(session: string, spool: zowe.IJobFile, ref
  * @param node The node to refresh
  * @param jobsProvider The tree to which the refreshed node belongs
  */
-export async function refreshJobsServer(node: IZoweJobTreeNode, jobsProvider: IZoweTree<IZoweJobTreeNode>) {
+export function refreshJobsServer(node: IZoweJobTreeNode, jobsProvider: IZoweTree<IZoweJobTreeNode>): void {
     jobsProvider.checkCurrentProfile(node);
     if (
         Profiles.getInstance().validProfile === ValidProfileEnum.VALID ||
         Profiles.getInstance().validProfile === ValidProfileEnum.UNVERIFIED
     ) {
-        await jobsProvider.refreshElement(node);
+        jobsProvider.refreshElement(node);
     }
 }
 
@@ -173,23 +173,23 @@ export async function modifyCommand(job: Job) {
         const options: vscode.InputBoxOptions = {
             prompt: localize("modifyCommand.inputBox.prompt", "Modify Command"),
         };
-        const command = await UIViews.inputBox(options);
+        const command = await ZoweVsCodeExtension.inputBox(options);
         if (command !== undefined) {
             const commandApi = ZoweExplorerApiRegister.getInstance().getCommandApi(job.getProfile());
             if (commandApi) {
                 const response = await ZoweExplorerApiRegister.getCommandApi(job.getProfile()).issueMvsCommand(
                     `f ${job.job.jobname},${command}`
                 );
-                vscode.window.showInformationMessage(
+                await vscode.window.showInformationMessage(
                     localize("jobActions.modifyCommand.response", "Command response: ") + response.commandResponse
                 );
             }
         }
     } catch (error) {
         if (error.toString().includes("non-existing")) {
-            vscode.window.showErrorMessage(
+            await vscode.window.showErrorMessage(
                 localize("jobActions.modifyCommand.apiNonExisting", "Not implemented yet for profile of type: ") +
-                    job.getProfile().type
+                job.getProfile().type
             );
         } else {
             await errorHandling(error.toString(), job.getProfile().name, error.message.toString());
@@ -209,15 +209,15 @@ export async function stopCommand(job: Job) {
             const response = await ZoweExplorerApiRegister.getCommandApi(job.getProfile()).issueMvsCommand(
                 `p ${job.job.jobname}`
             );
-            vscode.window.showInformationMessage(
+            await vscode.window.showInformationMessage(
                 localize("jobActions.stopCommand.response", "Command response: ") + response.commandResponse
             );
         }
     } catch (error) {
         if (error.toString().includes("non-existing")) {
-            vscode.window.showErrorMessage(
+            await vscode.window.showErrorMessage(
                 localize("jobActions.stopCommand.apiNonExisting", "Not implemented yet for profile of type: ") +
-                    job.getProfile().type
+                job.getProfile().type
             );
         } else {
             await errorHandling(error.toString(), job.getProfile().name, error.message.toString());
@@ -236,7 +236,7 @@ export async function setOwner(job: IZoweJobTreeNode, jobsProvider: IZoweTree<IZ
     const options: vscode.InputBoxOptions = {
         prompt: localize("setOwner.inputBox.prompt", "Owner"),
     };
-    const newOwner = await UIViews.inputBox(options);
+    const newOwner = await ZoweVsCodeExtension.inputBox(options);
     job.owner = newOwner;
     jobsProvider.refreshElement(job);
 }
@@ -251,7 +251,7 @@ export async function setPrefix(job: IZoweJobTreeNode, jobsProvider: IZoweTree<I
     const options: vscode.InputBoxOptions = {
         prompt: localize("setPrefix.inputBox.prompt", "Prefix"),
     };
-    const newPrefix = await UIViews.inputBox(options);
+    const newPrefix = await ZoweVsCodeExtension.inputBox(options);
     job.prefix = newPrefix;
     jobsProvider.refreshElement(job);
 }
@@ -290,7 +290,7 @@ async function deleteSingleJob(job: IZoweJobTreeNode, jobsProvider: IZoweTree<IZ
     const result = await vscode.window.showWarningMessage(message, { modal: true }, deleteButton);
     if (!result || result === "Cancel") {
         globals.LOG.debug(localize("deleteJobPrompt.confirmation.cancel.log.debug", "Delete action was canceled."));
-        vscode.window.showInformationMessage(
+        await vscode.window.showInformationMessage(
             localize("deleteJobPrompt.deleteCancelled", "Delete action was cancelled.")
         );
         return;
@@ -302,7 +302,7 @@ async function deleteSingleJob(job: IZoweJobTreeNode, jobsProvider: IZoweTree<IZ
         return;
     }
     await refreshAllJobs(jobsProvider);
-    vscode.window.showInformationMessage(localize("deleteCommand.job", "Job {0} deleted.", jobName));
+    await vscode.window.showInformationMessage(localize("deleteCommand.job", "Job {0} deleted.", jobName));
 }
 
 async function deleteMultipleJobs(
@@ -320,7 +320,7 @@ async function deleteMultipleJobs(
     const deleteChoice = await vscode.window.showWarningMessage(message, { modal: true }, deleteButton);
     if (!deleteChoice || deleteChoice === "Cancel") {
         globals.LOG.debug(localize("deleteJobPrompt.confirmation.cancel.log.debug", "Delete action was canceled."));
-        vscode.window.showInformationMessage(
+        await vscode.window.showInformationMessage(
             localize("deleteJobPrompt.deleteCancelled", "Delete action was cancelled.")
         );
         return;
@@ -345,7 +345,7 @@ async function deleteMultipleJobs(
         .filter((result) => result !== undefined);
     if (deletedJobs.length) {
         await refreshAllJobs(jobsProvider);
-        vscode.window.showInformationMessage(
+        await vscode.window.showInformationMessage(
             localize(
                 "deleteCommand.multipleJobs",
                 "The following jobs were deleted: {0}",

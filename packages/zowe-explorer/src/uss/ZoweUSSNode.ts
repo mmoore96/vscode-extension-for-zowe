@@ -90,7 +90,7 @@ export class ZoweUSSNode extends ZoweTreeNode implements IZoweUSSTreeNode {
                 this.fullPath = this.tooltip = "/" + label;
             }
         }
-        if (mParent && mParent.contextValue === globals.FAV_PROFILE_CONTEXT) {
+        if (mParent?.contextValue === globals.FAV_PROFILE_CONTEXT) {
             this.profileName = this.mProfileName = mParent.label.toString();
             this.fullPath = label.trim();
             // File or directory name only (no parent path)
