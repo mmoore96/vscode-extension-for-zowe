@@ -68,7 +68,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<ZoweEx
     // Determine the runtime framework to support special behavior for Theia
     globals.defineGlobals(preferencesTempPath);
 
-    hideTempFolder(getZoweDir());
+    await hideTempFolder(getZoweDir());
 
     let datasetProvider: IZoweTree<IZoweDatasetTreeNode>;
     let ussFileProvider: IZoweTree<IZoweUSSTreeNode>;
@@ -152,7 +152,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<ZoweEx
                 });
 
                 if (profileName === undefined) {
-                    vscode.window.showInformationMessage(
+                    await vscode.window.showInformationMessage(
                         localize("createNewConnection.undefined.passWord", "Operation Cancelled")
                     );
                     return;
@@ -164,7 +164,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<ZoweEx
 
             const creds = await Profiles.getInstance().promptCredentials(profileName, true);
             if (creds != null) {
-                vscode.window.showInformationMessage(
+                await vscode.window.showInformationMessage(
                     localize(
                         "promptCredentials.updatedCredentials",
                         "Credentials for {0} were successfully updated",
@@ -192,7 +192,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<ZoweEx
                 .getConfiguration()
                 /* tslint:disable:no-string-literal */
                 .get(globals.SETTINGS_TEMP_FOLDER_PATH);
-            moveTempFolder(preferencesTempPath, updatedPreferencesTempPath);
+            await moveTempFolder(preferencesTempPath, updatedPreferencesTempPath);
             preferencesTempPath = updatedPreferencesTempPath;
         }
         if (e.affectsConfiguration(globals.SETTINGS_AUTOMATIC_PROFILE_VALIDATION)) {
@@ -202,7 +202,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<ZoweEx
             await refreshActions.refreshAll(jobsProvider);
         }
         if (e.affectsConfiguration(globals.SETTINGS_TEMP_FOLDER_HIDE)) {
-            hideTempFolder(getZoweDir());
+            await hideTempFolder(getZoweDir());
         }
     });
 
@@ -217,13 +217,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<ZoweEx
     }
     if (datasetProvider || ussFileProvider) {
         context.subscriptions.push(
-            vscode.commands.registerCommand("zowe.openRecentMember", () =>
-                sharedActions.openRecentMemberPrompt(datasetProvider, ussFileProvider)
+            vscode.commands.registerCommand("zowe.openRecentMember", async () =>
+                await sharedActions.openRecentMemberPrompt(datasetProvider, ussFileProvider)
             )
         );
         context.subscriptions.push(
             vscode.commands.registerCommand("zowe.searchInAllLoadedItems", async () =>
-                sharedActions.searchInAllLoadedItems(datasetProvider, ussFileProvider)
+                await sharedActions.searchInAllLoadedItems(datasetProvider, ussFileProvider)
             )
         );
         context.subscriptions.push(
@@ -233,11 +233,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<ZoweEx
                         "onDidSaveTextDocument1",
                         "File was saved -- determining whether the file is a USS file or Data set.\n Comparing (case insensitive) "
                     ) +
-                        savedFile.fileName +
-                        localize("onDidSaveTextDocument2", " against directory ") +
-                        globals.DS_DIR +
-                        localize("onDidSaveTextDocument3", "and") +
-                        globals.USS_DIR
+                    savedFile.fileName +
+                    localize("onDidSaveTextDocument2", " against directory ") +
+                    globals.DS_DIR +
+                    localize("onDidSaveTextDocument3", "and") +
+                    globals.USS_DIR
                 );
                 if (savedFile.fileName.toUpperCase().indexOf(globals.DS_DIR.toUpperCase()) >= 0) {
                     globals.LOG.debug(localize("activate.didSaveText.isDataSet", "File is a data set-- saving "));
@@ -248,8 +248,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<ZoweEx
                 } else {
                     globals.LOG.debug(
                         localize("activate.didSaveText.file", "File ") +
-                            savedFile.fileName +
-                            localize("activate.didSaveText.notDataSet", " is not a data set or USS file ")
+                        savedFile.fileName +
+                        localize("activate.didSaveText.notDataSet", " is not a data set or USS file ")
                     );
                 }
             })
@@ -258,39 +258,39 @@ export async function activate(context: vscode.ExtensionContext): Promise<ZoweEx
     if (datasetProvider || ussFileProvider || jobsProvider) {
         context.subscriptions.push(
             vscode.commands.registerCommand("zowe.ds.deleteProfile", async (node) =>
-                Profiles.getInstance().deleteProfile(datasetProvider, ussFileProvider, jobsProvider, node)
+                await Profiles.getInstance().deleteProfile(datasetProvider, ussFileProvider, jobsProvider, node)
             )
         );
         context.subscriptions.push(
             vscode.commands.registerCommand("zowe.cmd.deleteProfile", async () =>
-                Profiles.getInstance().deleteProfile(datasetProvider, ussFileProvider, jobsProvider)
+                await Profiles.getInstance().deleteProfile(datasetProvider, ussFileProvider, jobsProvider)
             )
         );
         context.subscriptions.push(
             vscode.commands.registerCommand("zowe.uss.deleteProfile", async (node) =>
-                Profiles.getInstance().deleteProfile(datasetProvider, ussFileProvider, jobsProvider, node)
+                await Profiles.getInstance().deleteProfile(datasetProvider, ussFileProvider, jobsProvider, node)
             )
         );
         context.subscriptions.push(
             vscode.commands.registerCommand("zowe.jobs.deleteProfile", async (node) =>
-                Profiles.getInstance().deleteProfile(datasetProvider, ussFileProvider, jobsProvider, node)
+                await Profiles.getInstance().deleteProfile(datasetProvider, ussFileProvider, jobsProvider, node)
             )
         );
         context.subscriptions.push(
             vscode.commands.registerCommand("zowe.issueTsoCmd", async (node?, command?) => {
                 if (node) {
-                    TsoCommandHandler.getInstance().issueTsoCommand(node.session, command, node);
+                    await TsoCommandHandler.getInstance().issueTsoCommand(node.session, command, node);
                 } else {
-                    TsoCommandHandler.getInstance().issueTsoCommand();
+                    await TsoCommandHandler.getInstance().issueTsoCommand();
                 }
             })
         );
         context.subscriptions.push(
             vscode.commands.registerCommand("zowe.issueMvsCmd", async (node?, command?) => {
                 if (node) {
-                    MvsCommandHandler.getInstance().issueMvsCommand(node.session, command, node);
+                    await MvsCommandHandler.getInstance().issueMvsCommand(node.session, command, node);
                 } else {
-                    MvsCommandHandler.getInstance().issueMvsCommand();
+                    await MvsCommandHandler.getInstance().issueMvsCommand();
                 }
             })
         );
@@ -305,12 +305,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<ZoweEx
 function initDatasetProvider(context: vscode.ExtensionContext, datasetProvider: IZoweTree<IZoweDatasetTreeNode>) {
     context.subscriptions.push(
         vscode.commands.registerCommand("zowe.all.config.init", async () => {
-            datasetProvider.createZoweSchema(datasetProvider);
+            await datasetProvider.createZoweSchema(datasetProvider);
         })
     );
     context.subscriptions.push(
         vscode.commands.registerCommand("zowe.ds.addSession", async () =>
-            datasetProvider.createZoweSession(datasetProvider)
+            await datasetProvider.createZoweSession(datasetProvider)
         )
     );
     context.subscriptions.push(
@@ -323,11 +323,11 @@ function initDatasetProvider(context: vscode.ExtensionContext, datasetProvider: 
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.ds.refreshNode", (node) => dsActions.refreshPS(node))
+        vscode.commands.registerCommand("zowe.ds.refreshNode", async (node) => await dsActions.refreshPS(node))
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.ds.refreshDataset", (node) =>
-            dsActions.refreshDataset(node, datasetProvider)
+        vscode.commands.registerCommand("zowe.ds.refreshDataset", async (node) =>
+            await dsActions.refreshDataset(node, datasetProvider)
         )
     );
     context.subscriptions.push(
@@ -335,44 +335,44 @@ function initDatasetProvider(context: vscode.ExtensionContext, datasetProvider: 
     );
     context.subscriptions.push(
         vscode.commands.registerCommand("zowe.ds.editSession", async (node) =>
-            datasetProvider.editSession(node, datasetProvider)
+            await datasetProvider.editSession(node, datasetProvider)
         )
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.ds.ZoweNode.openPS", (node) =>
-            dsActions.openPS(node, true, datasetProvider)
+        vscode.commands.registerCommand("zowe.ds.ZoweNode.openPS", async (node) =>
+            await dsActions.openPS(node, true, datasetProvider)
         )
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.ds.createDataset", (node) => dsActions.createFile(node, datasetProvider))
+        vscode.commands.registerCommand("zowe.ds.createDataset", async (node) => await dsActions.createFile(node, datasetProvider))
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.ds.createMember", (node) => dsActions.createMember(node, datasetProvider))
+        vscode.commands.registerCommand("zowe.ds.createMember", async (node) => await dsActions.createMember(node, datasetProvider))
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.ds.deleteDataset", (node?) =>
-            dsActions.deleteDatasetPrompt(datasetProvider, node)
+        vscode.commands.registerCommand("zowe.ds.deleteDataset", async (node?) =>
+            await dsActions.deleteDatasetPrompt(datasetProvider, node)
         )
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.ds.allocateLike", (node) => dsActions.allocateLike(datasetProvider, node))
+        vscode.commands.registerCommand("zowe.ds.allocateLike", async (node) => await dsActions.allocateLike(datasetProvider, node))
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.ds.uploadDialog", (node) => dsActions.uploadDialog(node, datasetProvider))
+        vscode.commands.registerCommand("zowe.ds.uploadDialog", async (node) => await dsActions.uploadDialog(node, datasetProvider))
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.ds.deleteMember", (node?) =>
-            dsActions.deleteDatasetPrompt(datasetProvider, node)
+        vscode.commands.registerCommand("zowe.ds.deleteMember", async (node) =>
+            await dsActions.deleteDatasetPrompt(datasetProvider, node)
         )
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.ds.editDataSet", (node) => dsActions.openPS(node, false, datasetProvider))
+        vscode.commands.registerCommand("zowe.ds.editDataSet", async (node) => await dsActions.openPS(node, false, datasetProvider))
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.ds.editMember", (node) => dsActions.openPS(node, false, datasetProvider))
+        vscode.commands.registerCommand("zowe.ds.editMember", async (node) => await dsActions.openPS(node, false, datasetProvider))
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand("zowe.ds.removeSession", async (node) => datasetProvider.deleteSession(node))
+        vscode.commands.registerCommand("zowe.ds.removeSession", async (node) => await datasetProvider.deleteSession(node))
     );
     context.subscriptions.push(
         vscode.commands.registerCommand("zowe.ds.removeFavorite", async (node) => datasetProvider.removeFavorite(node))

@@ -18,7 +18,7 @@ import { ZoweUSSNode } from "../uss/ZoweUSSNode";
  * @param tooltip
  * @returns {string}
  */
-export function injectAdditionalDataToTooltip(node: ZoweUSSNode, tooltip: string) {
+export function injectAdditionalDataToTooltip(node: ZoweUSSNode, tooltip: string): string {
     if (node.downloaded && node.downloadedTime) {
         // TODO: Add time formatter to localization so we will use not just US variant
         return `${tooltip} (Downloaded: ${new Date(node.downloadedTime)

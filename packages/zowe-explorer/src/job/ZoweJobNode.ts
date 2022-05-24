@@ -44,7 +44,7 @@ export class Job extends ZoweTreeNode implements IZoweJobTreeNode {
     // tslint:disable-next-line: variable-name
     private _searchId: string;
 
-    constructor(
+    public constructor(
         label: string,
         collapsibleState: vscode.TreeItemCollapsibleState,
         mParent: IZoweJobTreeNode,
@@ -211,7 +211,7 @@ export class Job extends ZoweTreeNode implements IZoweJobTreeNode {
         return this.getParent() ? this.getParent().getSessionNode() : this;
     }
 
-    get tooltip(): string {
+    public get tooltip(): string {
         if (this.job !== null) {
             if (this.job.retcode) {
                 return `${this.job.jobname}(${this.job.jobid}) - ${this.job.retcode}`;
@@ -225,7 +225,7 @@ export class Job extends ZoweTreeNode implements IZoweJobTreeNode {
         }
     }
 
-    set owner(newOwner: string) {
+    public set owner(newOwner: string) {
         if (newOwner !== undefined) {
             if (newOwner.length === 0) {
                 this._owner = this.session.ISession.user;
@@ -235,11 +235,11 @@ export class Job extends ZoweTreeNode implements IZoweJobTreeNode {
         }
     }
 
-    get owner() {
+    public get owner() {
         return this._owner;
     }
 
-    set prefix(newPrefix: string) {
+    public set prefix(newPrefix: string) {
         if (newPrefix !== undefined) {
             if (newPrefix.length === 0) {
                 this._prefix = "*";
@@ -249,7 +249,7 @@ export class Job extends ZoweTreeNode implements IZoweJobTreeNode {
         }
     }
 
-    get prefix() {
+    public get prefix(): string {
         return this._prefix;
     }
 

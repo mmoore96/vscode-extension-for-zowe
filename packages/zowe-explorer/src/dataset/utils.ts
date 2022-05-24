@@ -12,19 +12,24 @@
 import * as globals from "../globals";
 import { IZoweNodeType } from "@zowe/zowe-explorer-api";
 
-// tslint:disable-next-line: no-duplicate-imports
+export interface IProfileAndDataSet {
+    profileName: string;
+    dataSetName: string;
+}
 
-export function getProfileAndDataSetName(node: IZoweNodeType) {
-    let profileName;
-    let dataSetName;
-    profileName = node.getParent().getLabel();
-    dataSetName = node.label as string;
+export interface INodeLabels extends IProfileAndDataSet {
+    memberName: string;
+}
+
+export function getProfileAndDataSetName(node: IZoweNodeType): IProfileAndDataSet {
+    const profileName = node.getParent().getLabel().toString();
+    const dataSetName = node.label.toString();
     return { profileName, dataSetName };
 }
 
-export function getNodeLabels(node: IZoweNodeType) {
+export function getNodeLabels(node: IZoweNodeType): INodeLabels {
     if (node.contextValue.includes(globals.DS_MEMBER_CONTEXT)) {
-        return { ...getProfileAndDataSetName(node.getParent()), memberName: node.getLabel() };
+        return { ...getProfileAndDataSetName(node.getParent()), memberName: node.getLabel().toString() };
     } else {
         return { ...getProfileAndDataSetName(node), memberName: undefined };
     }

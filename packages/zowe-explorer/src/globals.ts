@@ -25,12 +25,12 @@ nls.config({
 const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 
 // Globals
-export let ZOWETEMPFOLDER;
-export let ZOWE_TMP_FOLDER;
-export let USS_DIR;
-export let DS_DIR;
-export let CONFIG_PATH; // set during activate
-export let ISTHEIA: boolean = false; // set during activate
+export let ZOWETEMPFOLDER: string;
+export let ZOWE_TMP_FOLDER: string;
+export let USS_DIR: string;
+export let DS_DIR: string;
+export let CONFIG_PATH: string; // set during activate
+export const ISTHEIA = false; // set during activate
 export let LOG: Logger;
 export const COMMAND_COUNT = 98;
 export const MAX_SEARCH_HISTORY = 5;
@@ -86,7 +86,7 @@ export const SETTINGS_DS_HISTORY = "zowe.ds.history";
 export const SETTINGS_USS_HISTORY = "zowe.uss.history";
 export const SETTINGS_JOBS_HISTORY = "zowe.jobs.history";
 export const EXTENDER_CONFIG: ICommandProfileTypeConfiguration[] = [];
-export let PROFILESCACHE; // set during activate new ProfilesCache(Logger.getAppLogger());
+export let PROFILESCACHE: ProfilesCache; // set during activate new ProfilesCache(Logger.getAppLogger());
 
 export enum CreateDataSetTypeWithKeysEnum {
     DATA_SET_BINARY = 0,

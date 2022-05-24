@@ -175,18 +175,18 @@ export interface IZoweUSSTreeNode extends IZoweTreeNode {
      *
      * @param {string}
      */
-    setEtag?(etag: string);
+    setEtag?(etag: string): void;
     /**
      * Renaming a USS Node. This could be a Favorite Node
      *
      * @param {string} newNamePath
      */
-    rename?(newNamePath: string);
+    rename?(newNamePath: string): Promise<void>;
     /**
      * Specifies the field as binary
      * @param binary true is a binary file otherwise false
      */
-    setBinary?(binary: boolean);
+    setBinary?(binary: boolean): Promise<void>;
     // /**
     //  * Opens the text document
     //  * @return vscode.TextDocument
@@ -199,7 +199,7 @@ export interface IZoweUSSTreeNode extends IZoweTreeNode {
      * @param preview the file, true or false
      * @param ussFileProvider the tree provider
      */
-    openUSS?(download: boolean, previewFile: boolean, ussFileProvider: IZoweTree<IZoweUSSTreeNode>);
+    openUSS?(download: boolean, previewFile: boolean, ussFileProvider: IZoweTree<IZoweUSSTreeNode>): Promise<void>;
     /**
      * Returns the local file path for the ZoweUSSNode
      *
@@ -209,20 +209,20 @@ export interface IZoweUSSTreeNode extends IZoweTreeNode {
      * Refreshes the node with current mainframe data
      *
      */
-    refreshUSS?();
+    refreshUSS?(): Promise<void>;
     /**
      *
      * @param ussFileProvider Deletes the USS tree node
      * @param filePath
      */
-    deleteUSSNode?(ussFileProvider: IZoweTree<IZoweUSSTreeNode>, filePath: string);
+    deleteUSSNode?(ussFileProvider: IZoweTree<IZoweUSSTreeNode>, filePath: string): Promise<void>;
     /**
      * Process for renaming a USS Node. This could be a Favorite Node
      *
      * @param {USSTree} ussFileProvider
      * @param {string} filePath
      */
-    renameUSSNode?(ussFileProvider: IZoweTree<IZoweUSSTreeNode>, filePath: string);
+    renameUSSNode?(ussFileProvider: IZoweTree<IZoweUSSTreeNode>, filePath: string): Promise<void>;
     /**
      * Refreshes node and reopens it.
      * @param hasClosedInstance

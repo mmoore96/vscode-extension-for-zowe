@@ -18,9 +18,6 @@ import { resetValidationSettings, returnIconState } from "./actions";
 import { labelRefresh } from "./utils";
 import * as contextually from "../shared/context";
 import * as globals from "../globals";
-import { createDatasetTree } from "../dataset/DatasetTree";
-import { createUSSTree } from "../uss/USSTree";
-import { createJobsTree } from "../job/ZosJobsProvider";
 
 /**
  * View (DATA SETS, JOBS, USS) refresh button
@@ -28,23 +25,21 @@ import { createJobsTree } from "../job/ZosJobsProvider";
  *
  * @param {IZoweTree} treeProvider
  */
-export async function refreshAll(treeProvider: IZoweTree<IZoweTreeNode>) {
+export async function refreshAll(treeProvider: IZoweTree<IZoweTreeNode>): Promise<void> {
     await readConfigFromDisk();
     await Profiles.getInstance().refresh(ZoweExplorerApiRegister.getInstance());
-    treeProvider.mSessionNodes.forEach(async (sessNode) => {
-        const setting = (await PersistentFilters.getDirectValue(
-            globals.SETTINGS_AUTOMATIC_PROFILE_VALIDATION
-        )) as boolean;
+    for (const sessNode of treeProvider.mSessionNodes) {
+        const setting = PersistentFilters.getDirectValue(globals.SETTINGS_AUTOMATIC_PROFILE_VALIDATION) as boolean;
         if (contextually.isSessionNotFav(sessNode)) {
             labelRefresh(sessNode);
             sessNode.children = [];
             sessNode.dirty = true;
-            resetValidationSettings(sessNode, setting);
+            await resetValidationSettings(sessNode, setting);
             returnIconState(sessNode);
             await syncSessionNode(Profiles.getInstance())((profileValue) =>
                 ZoweExplorerApiRegister.getCommonApi(profileValue).getSession()
             )(sessNode);
         }
-    });
+    }
     treeProvider.refresh();
 }

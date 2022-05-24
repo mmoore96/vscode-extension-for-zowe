@@ -44,7 +44,7 @@ const localize: nls.LocalizeFunc = nls.loadMessageBundle();
  */
 export async function createJobsTree(log: Logger) {
     const tree = new ZosJobsProvider();
-    await tree.initializeJobsTree(log);
+    tree.initializeJobsTree(log);
     await tree.addSession();
     return tree;
 }
@@ -63,7 +63,7 @@ export class ZosJobsProvider extends ZoweTreeProvider implements IZoweTree<IZowe
     public createId = new jobUtils.JobIdFilterDescriptor();
     private treeView: vscode.TreeView<IZoweJobTreeNode>;
 
-    constructor() {
+    public constructor() {
         super(
             ZosJobsProvider.persistenceSchema,
             new Job(
@@ -87,16 +87,16 @@ export class ZosJobsProvider extends ZoweTreeProvider implements IZoweTree<IZowe
         });
     }
 
-    public rename(node: IZoweJobTreeNode) {
+    public rename(node: IZoweJobTreeNode): Promise<void> {
         throw new Error("Method not implemented.");
     }
-    public open(node: IZoweJobTreeNode, preview: boolean) {
+    public open(node: IZoweJobTreeNode, preview: boolean): void {
         throw new Error("Method not implemented.");
     }
-    public copy(node: IZoweJobTreeNode) {
+    public copy(node: IZoweJobTreeNode): void {
         throw new Error("Method not implemented.");
     }
-    public paste(node: IZoweJobTreeNode) {
+    public paste(node: IZoweJobTreeNode): void {
         throw new Error("Method not implemented.");
     }
 
@@ -105,21 +105,21 @@ export class ZosJobsProvider extends ZoweTreeProvider implements IZoweTree<IZowe
      *
      * @param {IZoweJobTreeNode} node
      */
-    public saveSearch(node: IZoweJobTreeNode) {
+    public saveSearch(node: IZoweJobTreeNode): IZoweJobTreeNode {
         node.contextValue = contextually.asFavorite(node);
         return node;
     }
-    public saveFile(document: vscode.TextDocument) {
+    public saveFile(document: vscode.TextDocument): void {
         throw new Error("Method not implemented.");
     }
-    public refreshPS(node: IZoweJobTreeNode) {
+    public refreshPS(node: IZoweJobTreeNode): void {
         throw new Error("Method not implemented.");
     }
-    public uploadDialog(node: IZoweJobTreeNode) {
+    public uploadDialog(node: IZoweJobTreeNode): void {
         throw new Error("Method not implemented.");
     }
-    public filterPrompt(node: IZoweJobTreeNode) {
-        return this.searchPrompt(node);
+    public async filterPrompt(node: IZoweJobTreeNode): Promise<void> {
+        await this.searchPrompt(node);
     }
 
     /**
@@ -161,7 +161,7 @@ export class ZosJobsProvider extends ZoweTreeProvider implements IZoweTree<IZowe
      * @param {string} [sessionName] - optional; loads default profile if not passed
      * @param {string} [profileType] - optional; loads profiles of a certain type if passed
      */
-    public async addSession(sessionName?: string, profileType?: string) {
+    public async addSession(sessionName?: string, profileType?: string): Promise<void> {
         const setting = PersistentFilters.getDirectValue(globals.SETTINGS_AUTOMATIC_PROFILE_VALIDATION) as boolean;
         // Loads profile associated with passed sessionName, default if none passed
         if (sessionName) {
@@ -250,7 +250,7 @@ export class ZosJobsProvider extends ZoweTreeProvider implements IZoweTree<IZowe
      * Initialize the favorites and history information
      * @param log - Logger
      */
-    public async initializeJobsTree(log: Logger) {
+    public initializeJobsTree(log: Logger): void {
         this.log = log;
         this.log.debug(localize("initializeJobsTree.log.debug", "Initializing profiles with jobs favorites."));
         const lines: string[] = this.mHistory.readFavorites();
@@ -270,7 +270,7 @@ export class ZosJobsProvider extends ZoweTreeProvider implements IZoweTree<IZowe
                 profileNodeInFavorites = this.createProfileNodeForFavs(profileName);
             }
             // Initialize and attach favorited item nodes under their respective profile node in Favorrites
-            const favChildNodeForProfile = await this.initializeFavChildNodeForProfile(
+            const favChildNodeForProfile = this.initializeFavChildNodeForProfile(
                 favLabel,
                 favContextValue,
                 profileNodeInFavorites
@@ -287,7 +287,7 @@ export class ZosJobsProvider extends ZoweTreeProvider implements IZoweTree<IZowe
      * @param parentNode The profile node in this.mFavorites that the favorite belongs to
      * @returns IZoweJobTreeNode
      */
-    public async initializeFavChildNodeForProfile(label: string, contextValue: string, parentNode: IZoweJobTreeNode) {
+    public initializeFavChildNodeForProfile(label: string, contextValue: string, parentNode: IZoweJobTreeNode) {
         let favJob: Job;
         if (contextValue.startsWith(globals.JOBS_JOB_CONTEXT)) {
             favJob = new Job(
@@ -548,9 +548,9 @@ export class ZosJobsProvider extends ZoweTreeProvider implements IZoweTree<IZowe
      * @param {IZoweJobTreeNode} node - The session node
      * @returns {Promise<void>}
      */
-    public async searchPrompt(node: IZoweJobTreeNode) {
+    public async searchPrompt(node: IZoweJobTreeNode): Promise<void> {
         let choice: vscode.QuickPickItem;
-        let searchCriteria: string = "";
+        let searchCriteria = "";
         const hasHistory = this.mHistory.getSearchHistory().length > 0;
         await this.checkCurrentProfile(node);
         if (
@@ -625,9 +625,9 @@ export class ZosJobsProvider extends ZoweTreeProvider implements IZoweTree<IZowe
                         validateInput: (value: string) =>
                             value.match(/ /g)
                                 ? localize(
-                                      "jobs.enter.valid.owner",
-                                      "Please enter a valid owner name (no spaces allowed)."
-                                  )
+                                    "jobs.enter.valid.owner",
+                                    "Please enter a valid owner name (no spaces allowed)."
+                                )
                                 : "",
                         value: owner,
                     };
@@ -744,7 +744,7 @@ export class ZosJobsProvider extends ZoweTreeProvider implements IZoweTree<IZowe
      * @param jobid - A specific jobid search item
      */
     public createSearchLabel(owner: string, prefix: string, jobid: string): string {
-        let revisedCriteria: string = "";
+        let revisedCriteria = "";
 
         const alphaNumeric = new RegExp("^w+$");
         if (jobid && !alphaNumeric.exec(jobid.trim())) {

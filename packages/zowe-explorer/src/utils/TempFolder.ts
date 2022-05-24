@@ -30,7 +30,7 @@ const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 //  * @param previousTempPath temp path settings value before updated by user
 //  * @param currentTempPath temp path settings value after updated by user
 //  */
-export async function moveTempFolder(previousTempPath: string, currentTempPath: string) {
+export async function moveTempFolder(previousTempPath: string, currentTempPath: string): Promise<void> {
     // Re-define globals with updated path
     globals.defineGlobals(currentTempPath);
 
@@ -39,7 +39,7 @@ export async function moveTempFolder(previousTempPath: string, currentTempPath: 
     }
 
     // Make certain that "temp" folder is cleared
-    cleanTempDir();
+    await cleanTempDir();
 
     try {
         fs.mkdirSync(globals.ZOWETEMPFOLDER);
@@ -53,7 +53,8 @@ export async function moveTempFolder(previousTempPath: string, currentTempPath: 
         await errorHandling(
             err,
             null,
-            localize("moveTempFolder.error", "Error encountered when creating temporary folder! ") + err.message
+            localize("moveTempFolder.error", "Error encountered when creating temporary folder! ") +
+                (err.message as string)
         );
     }
     const previousTemp = path.join(previousTempPath, "temp");
@@ -74,7 +75,7 @@ export async function moveTempFolder(previousTempPath: string, currentTempPath: 
         moveSync(previousTemp, globals.ZOWETEMPFOLDER, { overwrite: true });
     } catch (err) {
         globals.LOG.error("Error moving temporary folder! " + JSON.stringify(err));
-        vscode.window.showErrorMessage(err.message);
+        await vscode.window.showErrorMessage(err.message);
     }
 }
 
@@ -83,7 +84,7 @@ export async function moveTempFolder(previousTempPath: string, currentTempPath: 
  *
  * @param directory path to directory to be deleted
  */
-export async function cleanDir(directory) {
+export function cleanDir(directory): void {
     if (!fs.existsSync(directory)) {
         return;
     }
@@ -104,7 +105,7 @@ export async function cleanDir(directory) {
  *
  * @export
  */
-export async function cleanTempDir() {
+export async function cleanTempDir(): Promise<void> {
     // Get temp folder cleanup preference from settings
     const preferencesTempCleanupEnabled = PersistentFilters.getDirectValue(
         globals.SETTINGS_TEMP_FOLDER_CLEANUP
@@ -114,9 +115,9 @@ export async function cleanTempDir() {
         return;
     }
     try {
-        await cleanDir(globals.ZOWETEMPFOLDER);
+        cleanDir(globals.ZOWETEMPFOLDER);
     } catch (err) {
-        vscode.window.showErrorMessage(localize("deactivate.error", "Unable to delete temporary folder. ") + err);
+        await vscode.window.showErrorMessage(localize("deactivate.error", "Unable to delete temporary folder. ") + err);
     }
 }
 
@@ -125,9 +126,9 @@ export async function cleanTempDir() {
  *
  * @export
  */
-export async function hideTempFolder(zoweDir: string) {
+export async function hideTempFolder(zoweDir: string): Promise<void> {
     if (PersistentFilters.getDirectValue(globals.SETTINGS_TEMP_FOLDER_HIDE) as boolean) {
-        vscode.workspace
+        await vscode.workspace
             .getConfiguration("files")
             .update("exclude", { [zoweDir]: true, [globals.ZOWETEMPFOLDER]: true }, vscode.ConfigurationTarget.Global);
     }

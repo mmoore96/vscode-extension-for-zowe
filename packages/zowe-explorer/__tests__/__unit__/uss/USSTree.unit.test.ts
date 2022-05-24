@@ -229,7 +229,7 @@ describe("USSTree Unit Tests - Function initializeFavChildNodeForProfile()", () 
         if (targetIcon) {
             expectedFavSearchNode.iconPath = targetIcon.path;
         }
-        const favSearchNode = await testTree1.initializeFavChildNodeForProfile(label, line, favProfileNode);
+        const favSearchNode = testTree1.initializeFavChildNodeForProfile(label, line, favProfileNode);
 
         expect(favSearchNode).toEqual(expectedFavSearchNode);
     });
@@ -1180,7 +1180,7 @@ describe("USSTree Unit Tests - Function USSTree.rename()", () => {
         try {
             await globalMocks.testTree.rename(globalMocks.testUSSNode);
             // tslint:disable-next-line:no-empty
-        } catch (err) {}
+        } catch (err) { }
         expect(globalMocks.showErrorMessage.mock.calls.length).toBe(1);
     });
 });

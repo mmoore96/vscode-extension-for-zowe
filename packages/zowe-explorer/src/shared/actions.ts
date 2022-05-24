@@ -34,14 +34,14 @@ const localize: nls.LocalizeFunc = nls.loadMessageBundle();
 export async function searchInAllLoadedItems(
     datasetProvider?: IZoweTree<IZoweDatasetTreeNode>,
     ussFileProvider?: IZoweTree<IZoweUSSTreeNode>
-) {
+): Promise<void> {
     let pattern: string;
     const items: IZoweNodeType[] = [];
     const qpItems = [];
     const quickpick = vscode.window.createQuickPick();
     quickpick.placeholder = localize("searchHistory.options.prompt", "Enter a filter");
     quickpick.ignoreFocusOut = true;
-    quickpick.onDidChangeValue(async (value) => {
+    quickpick.onDidChangeValue((value) => {
         if (value) {
             quickpick.items = filterTreeByString(value, qpItems);
         } else {
@@ -60,7 +60,7 @@ export async function searchInAllLoadedItems(
     }
 
     if (items.length === 0) {
-        vscode.window.showInformationMessage(
+        await vscode.window.showInformationMessage(
             localize("searchInAllLoadedItems.noneLoaded", "No items are loaded in the tree.")
         );
         return;
@@ -84,9 +84,8 @@ export async function searchInAllLoadedItems(
             }
             qpItems.push(qpItem);
         } else if (contextually.isUssDirectory(item) || contextually.isText(item) || contextually.isBinary(item)) {
-            const filterItem = `[${item.getProfileName().trim()}]: ${
-                item.getParent().fullPath
-            }/${item.label.toString()}`;
+            const filterItem = `[${item.getProfileName().trim()}]: ${item.getParent().fullPath
+                }/${item.label.toString()}`;
             qpItem = new FilterItem({ text: filterItem, description: "USS" });
             qpItems.push(qpItem);
         }
@@ -96,7 +95,7 @@ export async function searchInAllLoadedItems(
     quickpick.show();
     const choice = await resolveQuickPickHelper(quickpick);
     if (!choice) {
-        vscode.window.showInformationMessage(
+        await vscode.window.showInformationMessage(
             localize("searchInAllLoadedItems.enterPattern", "You must enter a pattern.")
         );
         return;
@@ -148,7 +147,7 @@ export async function searchInAllLoadedItems(
 
                 // Open in workspace
                 datasetProvider.addSearchHistory(`${nodeName}(${memberName})`);
-                openPS(member, true, datasetProvider);
+                await openPS(member, true, datasetProvider);
             } else {
                 // PDS & SDS
                 await datasetProvider.getTreeView().reveal(node, { select: true, focus: true, expand: false });
@@ -156,7 +155,7 @@ export async function searchInAllLoadedItems(
                 // If selected node was SDS, open it in workspace
                 if (contextually.isDs(node)) {
                     datasetProvider.addSearchHistory(nodeName);
-                    openPS(node, true, datasetProvider);
+                    await openPS(node, true, datasetProvider);
                 }
             }
         }
@@ -189,7 +188,7 @@ export async function openRecentMemberPrompt(
 
             const choice = await vscode.window.showQuickPick([createPick, ...items], options1);
             if (!choice) {
-                vscode.window.showInformationMessage(
+                await vscode.window.showInformationMessage(
                     localize("enterPattern.pattern", "No selection made. Operation cancelled.")
                 );
                 return;
@@ -239,7 +238,7 @@ export async function openRecentMemberPrompt(
     }
 }
 
-export async function returnIconState(node: IZoweNodeType) {
+export function returnIconState(node: IZoweNodeType): IZoweNodeType {
     const activePathClosed = getIconById(IconId.sessionActive);
     const activePathOpen = getIconById(IconId.sessionActiveOpen);
     const inactivePathClosed = getIconById(IconId.sessionInactive); // So far, we only ever reference the closed inactive icon, not the open one

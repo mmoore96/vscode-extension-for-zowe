@@ -44,7 +44,7 @@ export class SettingsConfig {
         }
     }
     // Dictionary describing translation from old configuration names to new standardized names
-    private static configurationDictionary = {
+    private static configurationDictionary: { [key: string]: string } = {
         "Zowe-Default-Datasets-Binary": globals.SETTINGS_DS_DEFAULT_BINARY,
         "Zowe-Default-Datasets-C": globals.SETTINGS_DS_DEFAULT_C,
         "Zowe-Default-Datasets-Classic": globals.SETTINGS_DS_DEFAULT_CLASSIC,
@@ -86,8 +86,8 @@ export class SettingsConfig {
 
         // Standardize global settings when old Zowe settings were found
         if (SettingsConfig.zoweOldConfigurations.length > 0) {
-            SettingsConfig.zoweOldConfigurations.forEach(async (configuration) => {
-                let globalValue: any = SettingsConfig.configurations.inspect(configuration).globalValue;
+            for (const configuration of SettingsConfig.zoweOldConfigurations) {
+                let globalValue = SettingsConfig.configurations.inspect<any>(configuration).globalValue;
 
                 // Adjust fetching of value due to schema change
                 if (configuration === "Zowe-Temp-Folder-Location") {
@@ -104,7 +104,7 @@ export class SettingsConfig {
                     );
                     globalIsMigrated = true;
                 }
-            });
+            }
         }
 
         if (globalIsMigrated) {
@@ -127,7 +127,7 @@ export class SettingsConfig {
             );
 
             for (const configuration of filteredConfigurations) {
-                let workspaceValue: any = SettingsConfig.configurations.inspect(configuration).workspaceValue;
+                let workspaceValue = SettingsConfig.configurations.inspect<any>(configuration).workspaceValue;
 
                 if (configuration === "Zowe-Temp-Folder-Location") {
                     workspaceValue = workspaceValue ? workspaceValue.folderPath : workspaceValue;

@@ -658,14 +658,14 @@ describe("ZoweUSSNode Unit Tests - Function node.setBinary()", () => {
             undefined
         );
 
-        child.setBinary(true);
+        await child.setBinary(true);
         expect(child.contextValue).toEqual(globals.DS_BINARY_FILE_CONTEXT);
         expect(JSON.stringify(child.iconPath)).toContain("document-binary.svg");
-        child.setBinary(false);
+        await child.setBinary(false);
         expect(child.contextValue).toEqual(globals.DS_TEXT_FILE_CONTEXT);
-        subNode.setBinary(true);
+        await subNode.setBinary(true);
         expect(subNode.contextValue).toEqual(globals.DS_BINARY_FILE_CONTEXT + globals.FAV_SUFFIX);
-        subNode.setBinary(false);
+        await subNode.setBinary(false);
         expect(subNode.contextValue).toEqual(globals.DS_TEXT_FILE_CONTEXT + globals.FAV_SUFFIX);
     });
 });
@@ -740,7 +740,7 @@ describe("ZoweUSSNode Unit Tests - Function node.deleteUSSNode()", () => {
         try {
             await blockMocks.ussNode.deleteUSSNode(blockMocks.testUSSTree, "");
             // tslint:disable-next-line:no-empty
-        } catch (err) {}
+        } catch (err) { }
 
         expect(globalMocks.showErrorMessage.mock.calls.length).toBe(1);
         expect(blockMocks.testUSSTree.refresh).not.toHaveBeenCalled();
@@ -908,7 +908,7 @@ describe("ZoweUSSNode Unit Tests - Function node.getChildren()", () => {
 
     it(
         "Tests that when zowe.List. causes an error on the zowe call, " +
-            "node.getChildren() throws an error and the catch block is reached",
+        "node.getChildren() throws an error and the catch block is reached",
         async () => {
             const globalMocks = await createGlobalMocks();
             const blockMocks = await createBlockMocks(globalMocks);
@@ -928,7 +928,7 @@ describe("ZoweUSSNode Unit Tests - Function node.getChildren()", () => {
 
     it(
         "Tests that when bright.List returns an unsuccessful response, " +
-            "node.getChildren() throws an error and the catch block is reached",
+        "node.getChildren() throws an error and the catch block is reached",
         async () => {
             const globalMocks = await createGlobalMocks();
             const blockMocks = await createBlockMocks(globalMocks);
@@ -1169,7 +1169,7 @@ describe("ZoweUSSNode Unit Tests - Function node.openUSS()", () => {
         try {
             await child.openUSS(false, true, blockMocks.testUSSTree);
             // tslint:disable-next-line: no-empty
-        } catch (err) {}
+        } catch (err) { }
 
         expect(globalMocks.ussFile.mock.calls.length).toBe(0);
         expect(globalMocks.openTextDocument.mock.calls.length).toBe(1);
@@ -1323,7 +1323,7 @@ describe("ZoweUSSNode Unit Tests - Function node.openUSS()", () => {
         try {
             await brat.openUSS(false, true, blockMocks.testUSSTree);
             // tslint:disable-next-line: no-empty
-        } catch (err) {}
+        } catch (err) { }
 
         expect(globalMocks.ussFile.mock.calls.length).toBe(0);
         expect(globalMocks.showErrorMessage.mock.calls.length).toBe(2);

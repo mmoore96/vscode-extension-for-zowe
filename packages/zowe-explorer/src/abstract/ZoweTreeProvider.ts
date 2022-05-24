@@ -46,7 +46,7 @@ export class ZoweTreeProvider {
 
     protected mHistory: PersistentFilters;
     protected log: Logger = Logger.getAppLogger();
-    protected validProfile: number = -1;
+    protected validProfile = -1;
 
     constructor(protected persistenceSchema: PersistenceSchemaEnum, public mFavoriteSession: IZoweTreeNode) {
         this.mHistory = new PersistentFilters(this.persistenceSchema);
@@ -71,15 +71,15 @@ export class ZoweTreeProvider {
      *
      * @param {IZoweTreeNode}
      */
-    public setItem(treeView: vscode.TreeView<IZoweTreeNode>, item: IZoweTreeNode) {
-        treeView.reveal(item, { select: true, focus: true });
+    public async setItem(treeView: vscode.TreeView<IZoweTreeNode>, item: IZoweTreeNode): Promise<void> {
+        await treeView.reveal(item, { select: true, focus: true });
     }
 
     /**
      * Call whenever the context of a node needs to be refreshed to add the home suffix
      * @param node Node to refresh
      */
-    public async refreshHomeProfileContext(node) {
+    public async refreshHomeProfileContext(node): Promise<void> {
         const mProfileInfo = await Profiles.getInstance().getProfileInfo();
         if (mProfileInfo.usingTeamConfig && !contextually.isHomeProfile(node)) {
             const prof = mProfileInfo.getAllProfiles().find((p) => p.profName === node.getProfileName());
@@ -113,7 +113,7 @@ export class ZoweTreeProvider {
      * @param element the node being flipped
      * @param isOpen the intended state of the the tree view provider, true or false
      */
-    public async flipState(element: IZoweTreeNode, isOpen: boolean = false) {
+    public flipState(element: IZoweTreeNode, isOpen = false): void {
         element.collapsibleState = isOpen
             ? vscode.TreeItemCollapsibleState.Expanded
             : vscode.TreeItemCollapsibleState.Collapsed;
@@ -125,7 +125,7 @@ export class ZoweTreeProvider {
         this.mOnDidChangeTreeData.fire(element);
     }
 
-    public async onDidChangeConfiguration(e: vscode.ConfigurationChangeEvent) {
+    public async onDidChangeConfiguration(e: vscode.ConfigurationChangeEvent): Promise<void> {
         if (e.affectsConfiguration(this.persistenceSchema)) {
             const setting: any = {
                 ...vscode.workspace.getConfiguration().get(this.persistenceSchema),
@@ -140,17 +140,17 @@ export class ZoweTreeProvider {
         }
     }
 
-    public getSearchHistory() {
+    public getSearchHistory(): string[] {
         return this.mHistory.getSearchHistory();
     }
 
-    public getTreeType() {
+    public getTreeType(): PersistenceSchemaEnum {
         return this.persistenceSchema;
     }
 
-    public async addSearchHistory(criteria: string) {
+    public async addSearchHistory(criteria: string): Promise<void> {
         if (criteria) {
-            this.mHistory.addSearchHistory(criteria);
+            await this.mHistory.addSearchHistory(criteria);
             this.refresh();
         }
     }
@@ -190,7 +190,7 @@ export class ZoweTreeProvider {
         }
     }
 
-    public async checkCurrentProfile(node: IZoweTreeNode) {
+    public async checkCurrentProfile(node: IZoweTreeNode): Promise<void> {
         const profile = node.getProfile();
         const profileStatus = await Profiles.getInstance().checkCurrentProfile(profile);
         if (profileStatus.status === "inactive") {
@@ -209,19 +209,19 @@ export class ZoweTreeProvider {
 
             await errorHandling(
                 localize("validateProfiles.invalid1", "Profile Name ") +
-                    profile.name +
-                    localize(
-                        "validateProfiles.invalid2",
-                        " is inactive. Please check if your Zowe server is active or if the URL and port in your profile is correct."
-                    )
+                profile.name +
+                localize(
+                    "validateProfiles.invalid2",
+                    " is inactive. Please check if your Zowe server is active or if the URL and port in your profile is correct."
+                )
             );
             this.log.debug(
                 localize("validateProfiles.invalid1", "Profile Name ") +
-                    node.getProfileName() +
-                    localize(
-                        "validateProfiles.invalid2",
-                        " is inactive. Please check if your Zowe server is active or if the URL and port in your profile is correct."
-                    )
+                node.getProfileName() +
+                localize(
+                    "validateProfiles.invalid2",
+                    " is inactive. Please check if your Zowe server is active or if the URL and port in your profile is correct."
+                )
             );
         } else if (profileStatus.status === "active") {
             if (

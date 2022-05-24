@@ -83,7 +83,7 @@ export function labelRefresh(node: vscode.TreeItem): void {
         : node.label + " ";
 }
 
-export function sortTreeItems(favorites: vscode.TreeItem[], specificContext) {
+export function sortTreeItems(favorites: vscode.TreeItem[], specificContext): void {
     favorites.sort((a, b) => {
         if (a.contextValue === specificContext) {
             if (b.contextValue === specificContext) {
@@ -101,7 +101,7 @@ export function sortTreeItems(favorites: vscode.TreeItem[], specificContext) {
 /*************************************************************************************************************
  * Determine IDE name to display based on app environment
  *************************************************************************************************************/
-export function getAppName(isTheia: boolean) {
+export function getAppName(isTheia: boolean): string {
     return isTheia ? "Theia" : "VS Code";
 }
 
@@ -112,7 +112,7 @@ export function getAppName(isTheia: boolean) {
  * @param {string} label - If node is a member, label includes the name of the PDS
  * @param {IZoweTreeNode} node
  */
-export function getDocumentFilePath(label: string, node: IZoweTreeNode) {
+export function getDocumentFilePath(label: string, node: IZoweTreeNode): string {
     const dsDir = globals.DS_DIR;
     const profName = node.getProfileName();
     const suffix = appendSuffix(label);

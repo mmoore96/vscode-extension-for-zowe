@@ -775,7 +775,7 @@ describe("Dataset Tree Unit Tests - Function removeFileHistory", () => {
 
         testTree.addFileHistory("testFileHistory");
         expect(testTree.getFileHistory()).toEqual(["TESTFILEHISTORY"]);
-        testTree.removeFileHistory("testFileHistory");
+        await testTree.removeFileHistory("testFileHistory");
         expect(testTree.getFileHistory()).toEqual([]);
     });
 });
@@ -1709,7 +1709,8 @@ describe("Dataset Tree Unit Tests - Function onDidConfiguration", () => {
 
         await testTree.onDidChangeConfiguration(event);
 
-        expect(mocked(vscode.workspace.getConfiguration)).toBeCalledTimes(2);
+        expect(vscode.workspace.getConfiguration).toHaveBeenCalled();
+        expect(vscode.workspace.getConfiguration().update).toHaveBeenCalled();
     });
 });
 describe("Dataset Tree Unit Tests - Function renameNode", () => {

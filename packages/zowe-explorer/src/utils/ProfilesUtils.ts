@@ -12,9 +12,8 @@
 // Generic utility functions (not node type related). See ./src/shared/utils.ts
 
 import * as vscode from "vscode";
-import * as fs from "fs";
 import * as globals from "../globals";
-import { Session, IProfile, IProfileLoaded, ProfileInfo, IConfigLayer } from "@zowe/imperative";
+import { Session, IProfile, IProfileLoaded, ProfileInfo, IConfigLayer, ImperativeError } from "@zowe/imperative";
 import { getSecurityModules, IZoweTreeNode, ZoweTreeNode, getZoweDir, getFullPath } from "@zowe/zowe-explorer-api";
 import { Profiles } from "../Profiles";
 import * as nls from "vscode-nls";
@@ -32,7 +31,11 @@ const localize: nls.LocalizeFunc = nls.loadMessageBundle();
  * @param {label} - additional information such as profile name, credentials, messageID etc
  * @param {moreInfo} - additional/customized error messages
  *************************************************************************************************************/
-export async function errorHandling(errorDetails: any, label?: string, moreInfo?: string) {
+export async function errorHandling(
+    errorDetails: ImperativeError | string,
+    label?: string,
+    moreInfo?: string
+): Promise<void> {
     let httpErrCode = null;
     const errMsg = localize(
         "errorHandling.invalid.credentials",
@@ -44,18 +47,20 @@ export async function errorHandling(errorDetails: any, label?: string, moreInfo?
         "Your connection is no longer active. Please log in to an authentication service to restore the connection."
     );
 
-    if (errorDetails.mDetails !== undefined) {
+    if (errorDetails instanceof ImperativeError && errorDetails.mDetails !== undefined) {
         httpErrCode = errorDetails.mDetails.errorCode;
         // open config file for missing hostname error
         const msg = errorDetails.toString();
         if (msg.includes("hostname")) {
-            let mProfileInfo = await globals.PROFILESCACHE.getProfileInfo();
+            let _profilesCache = globals.PROFILESCACHE;
+            let mProfileInfo = await _profilesCache.getProfileInfo();
             if (!mProfileInfo) {
-                mProfileInfo = await Profiles.getInstance().getProfileInfo();
+                _profilesCache = Profiles.getInstance();
+                mProfileInfo = await _profilesCache.getProfileInfo();
             }
             if (mProfileInfo.usingTeamConfig) {
-                vscode.window.showErrorMessage("Required parameter 'host' must not be blank");
-                const currentProfile = await mProfileInfo.getProfileFromConfig(label.trim());
+                await vscode.window.showErrorMessage("Required parameter 'host' must not be blank");
+                const currentProfile = await _profilesCache.getProfileFromConfig(label.trim());
                 const filePath = currentProfile.profLoc.osLoc[0];
                 await Profiles.getInstance().openConfigFile(filePath);
                 return;
@@ -64,59 +69,52 @@ export async function errorHandling(errorDetails: any, label?: string, moreInfo?
     }
 
     switch (httpErrCode) {
-        // tslint:disable-next-line: no-magic-numbers
-        case 401:
+        case "401":
             if (label.includes("[")) {
                 label = label.substring(0, label.indexOf(" ["));
             }
 
-            if (errorDetails.mDetails.additionalDetails) {
+            if (errorDetails instanceof ImperativeError && errorDetails.mDetails.additionalDetails) {
                 const tokenError: string = errorDetails.mDetails.additionalDetails;
                 if (tokenError.includes("Token is not valid or expired.")) {
                     if (isTheia()) {
-                        vscode.window.showErrorMessage(errToken).then(async () => {
-                            await Profiles.getInstance().ssoLogin(null, label);
-                        });
+                        await vscode.window.showErrorMessage(errToken);
+                        await Profiles.getInstance().ssoLogin(null, label);
                     } else {
                         const message = localize(
                             "ErrorHandling.authentication.login",
                             "Log in to Authentication Service"
                         );
-                        vscode.window.showErrorMessage(errToken, message).then(async (selection) => {
-                            if (selection) {
-                                await Profiles.getInstance().ssoLogin(null, label);
-                            }
-                        });
+                        const selection = await vscode.window.showErrorMessage(errToken, message);
+                        if (selection) {
+                            await Profiles.getInstance().ssoLogin(null, label);
+                        }
                     }
                     break;
                 }
             }
 
             if (isTheia()) {
-                vscode.window.showErrorMessage(errMsg);
+                await vscode.window.showErrorMessage(errMsg);
             } else {
                 const checkCredsButton = localize("ErrorHandling.checkCredentials.button", "Check Credentials");
-                await vscode.window
-                    .showErrorMessage(errMsg, { modal: true }, ...[checkCredsButton])
-                    .then(async (selection) => {
-                        if (selection === checkCredsButton) {
-                            await Profiles.getInstance().promptCredentials(label.trim(), true);
-                        } else {
-                            vscode.window.showInformationMessage(
-                                localize("ErrorHandling.checkCredentials.cancelled", "Operation Cancelled")
-                            );
-                        }
-                    });
+                const selection = await vscode.window.showErrorMessage(errMsg, { modal: true }, ...[checkCredsButton]);
+                if (selection === checkCredsButton) {
+                    await Profiles.getInstance().promptCredentials(label.trim(), true);
+                } else {
+                    await vscode.window.showInformationMessage(
+                        localize("ErrorHandling.checkCredentials.cancelled", "Operation Cancelled")
+                    );
+                }
             }
             break;
         default:
             if (moreInfo === undefined) {
                 moreInfo = errorDetails.toString().includes("Error") ? "" : "Error:";
             }
-            vscode.window.showErrorMessage(moreInfo + " " + errorDetails);
+            await vscode.window.showErrorMessage(moreInfo + " " + errorDetails);
             break;
     }
-    return;
 }
 
 // TODO: remove this second occurence
@@ -139,7 +137,7 @@ type SessionForProfile = (profile: IProfileLoaded) => Session;
 export const syncSessionNode =
     (profiles: Profiles) =>
     (getSessionForProfile: SessionForProfile) =>
-    async (sessionNode: IZoweTreeNode): Promise<void> => {
+    (sessionNode: IZoweTreeNode): Promise<void> => {
         sessionNode.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
         const profileType = sessionNode.getProfile().type;
@@ -156,7 +154,7 @@ export const syncSessionNode =
         sessionNode.setSessionToChoice(session);
     };
 
-export async function resolveQuickPickHelper(
+export function resolveQuickPickHelper(
     quickpick: vscode.QuickPick<vscode.QuickPickItem>
 ): Promise<vscode.QuickPickItem | undefined> {
     return new Promise<vscode.QuickPickItem | undefined>((c) => {
@@ -174,33 +172,33 @@ export interface IFilterItem {
 
 // tslint:disable-next-line: max-classes-per-file
 export class FilterItem implements vscode.QuickPickItem {
-    constructor(private filterItem: IFilterItem) {}
-    get label(): string {
+    public constructor(private filterItem: IFilterItem) {}
+    public get label(): string {
         const icon = this.filterItem.icon ? this.filterItem.icon + " " : null;
         return (icon ?? "") + this.filterItem.text;
     }
-    get description(): string {
+    public get description(): string {
         if (this.filterItem.description) {
             return this.filterItem.description;
         } else {
             return "";
         }
     }
-    get alwaysShow(): boolean {
+    public get alwaysShow(): boolean {
         return this.filterItem.show;
     }
 }
 
 // tslint:disable-next-line: max-classes-per-file
 export class FilterDescriptor implements vscode.QuickPickItem {
-    constructor(private text: string) {}
-    get label(): string {
+    public constructor(private text: string) {}
+    public get label(): string {
         return this.text;
     }
-    get description(): string {
+    public get description(): string {
         return "";
     }
-    get alwaysShow(): boolean {
+    public get alwaysShow(): boolean {
         return true;
     }
 }
@@ -208,14 +206,14 @@ export class FilterDescriptor implements vscode.QuickPickItem {
 /**
  * Function to update the node profile information
  */
-export async function setProfile(node: IZoweTreeNode, profile: IProfile) {
+export function setProfile(node: IZoweTreeNode, profile: IProfile): void {
     node.getProfile().profile = profile;
 }
 
 /**
  * Function to update the node session information
  */
-export async function setSession(node: IZoweTreeNode, combinedSessionProfile: IProfile) {
+export function setSession(node: IZoweTreeNode, combinedSessionProfile: IProfile): void {
     const sessionNode = node.getSession();
     for (const prop of Object.keys(combinedSessionProfile)) {
         if (prop === "host") {
@@ -226,22 +224,22 @@ export async function setSession(node: IZoweTreeNode, combinedSessionProfile: IP
     }
 }
 
-export async function getProfileInfo(envTheia: boolean): Promise<ProfileInfo> {
+export function getProfileInfo(envTheia: boolean): ProfileInfo {
     const mProfileInfo = new ProfileInfo("zowe", {
         requireKeytar: () => getSecurityModules("keytar", envTheia),
     });
     return mProfileInfo;
 }
 
-export function getProfile(node: vscode.TreeItem) {
+export function getProfile(node: vscode.TreeItem): IProfileLoaded {
     if (node instanceof ZoweTreeNode) {
-        return (node as ZoweTreeNode).getProfile();
+        return node.getProfile();
     }
     throw new Error(localize("getProfile.notTreeItem", "Tree Item is not a Zowe Explorer item."));
 }
 
-export async function readConfigFromDisk() {
-    const mProfileInfo = await getProfileInfo(globals.ISTHEIA);
+export async function readConfigFromDisk(): Promise<void> {
+    const mProfileInfo = getProfileInfo(globals.ISTHEIA);
     let rootPath;
     if (vscode.workspace.workspaceFolders) {
         rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;

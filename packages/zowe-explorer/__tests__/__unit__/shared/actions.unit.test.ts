@@ -400,7 +400,7 @@ describe("Shared Actions Unit Tests - Function returnIconState", () => {
         return newMocks;
     }
 
-    it("Tests that returnIconState is resetting active icons", async () => {
+    it("Tests that returnIconState is resetting active icons", () => {
         const blockMocks = createBlockMocks();
         const resultNode: IZoweNodeType = blockMocks.datasetSessionNode;
         const resultIcon = getIconById(IconId.session);
@@ -410,11 +410,11 @@ describe("Shared Actions Unit Tests - Function returnIconState", () => {
         const sessionIcon = getIconById(IconId.sessionActive);
         testNode.iconPath = sessionIcon.path;
 
-        const response = await sharedActions.returnIconState(testNode);
+        const response = sharedActions.returnIconState(testNode);
         expect(getIconByNode(response)).toEqual(getIconByNode(resultNode));
     });
 
-    it("Tests that returnIconState is resetting inactive icons", async () => {
+    it("Tests that returnIconState is resetting inactive icons", () => {
         const blockMocks = createBlockMocks();
         const resultNode: IZoweNodeType = blockMocks.datasetSessionNode;
         const resultIcon = getIconById(IconId.session);
@@ -424,7 +424,7 @@ describe("Shared Actions Unit Tests - Function returnIconState", () => {
         testNode.iconPath = sessionIcon.path;
 
         blockMocks.mockGetIconByNode.mockReturnValueOnce(IconId.sessionInactive);
-        const response = await sharedActions.returnIconState(testNode);
+        const response = sharedActions.returnIconState(testNode);
         expect(getIconByNode(response)).toEqual(getIconByNode(resultNode));
     });
 });

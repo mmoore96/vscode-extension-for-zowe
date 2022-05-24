@@ -1,0 +1,34 @@
+root: true
+parser: "@typescript-eslint/parser"
+parserOptions:
+  ecmaVersion: 6
+  sourceType: module
+  project:
+    - "./tsconfig.json"
+plugins:
+  - "@typescript-eslint"
+extends:
+  - eslint:recommended
+  - plugin:@typescript-eslint/recommended
+  - plugin:@typescript-eslint/recommended-requiring-type-checking
+  - prettier
+rules:
+  "@typescript-eslint/no-namespace": off
+  "@typescript-eslint/explicit-function-return-type": warn # error -> warn
+  "@typescript-eslint/explicit-member-accessibility": error
+  "@typescript-eslint/member-ordering": warn
+  "@typescript-eslint/no-unsafe-argument": warn
+  "@typescript-eslint/no-unsafe-member-access": warn # Newly added
+  "@typescript-eslint/restrict-plus-operands": warn # Newly added
+  "@typescript-eslint/no-unsafe-call": warn # Newly added
+  "@typescript-eslint/no-unsafe-assignment": warn # Newly added
+  "@typescript-eslint/no-unsafe-return": warn # Newly added
+  camelcase: error
+  no-console: error
+  array-callback-return: error
+  complexity:
+    - warn # error -> warn
+    - max: 20 # Updated 15 -> 20
+  no-implicit-globals: error
+  # require-await: error # Removed since it;s already part of the typescript-eslint/recommended
+  no-shadow: error

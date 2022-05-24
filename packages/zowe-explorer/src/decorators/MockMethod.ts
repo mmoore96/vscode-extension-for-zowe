@@ -33,7 +33,7 @@
 export function MockMethod() {
     return (target: any, key: string, descriptor: PropertyDescriptor) => {
         if (descriptor === undefined) {
-            descriptor = Object.getOwnPropertyDescriptor(target, key) as PropertyDescriptor;
+            descriptor = Object.getOwnPropertyDescriptor(target, key);
         }
 
         const originalMethod = descriptor.value;

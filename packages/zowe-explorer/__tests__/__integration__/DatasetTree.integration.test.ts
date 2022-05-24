@@ -317,7 +317,7 @@ describe("DatasetTree Integration Tests", async () => {
     });
 
     it("Tests that removeFileHistory removes a file from the file history list", async () => {
-        testTree.removeFileHistory(`[${sessNode.getLabel().toString()}]: ${pattern}.EXT.SAMPLE.PDS`);
+        await testTree.removeFileHistory(`[${sessNode.getLabel().toString()}]: ${pattern}.EXT.SAMPLE.PDS`);
         const patternIndex = testTree
             .getFileHistory()
             .findIndex((file) => file === `[${sessNode.getLabel().toString()}]: ${pattern}.EXT.SAMPLE.PDS(TESTMEMB)`);

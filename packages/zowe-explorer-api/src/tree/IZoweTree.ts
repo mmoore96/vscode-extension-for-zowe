@@ -118,7 +118,7 @@ export interface IZoweTree<T> extends vscode.TreeDataProvider<T> {
      * Rename the node. Begins a dialog.
      * @param the node to be renamed
      */
-    rename(node: IZoweNodeType);
+    rename(node: IZoweNodeType): Promise<void>;
     /**
      * Opens the node. Begins a dialog.
      * @param node: the node to be opened
@@ -226,7 +226,7 @@ export interface IZoweTree<T> extends vscode.TreeDataProvider<T> {
      * @param {IZoweDatasetTreeNode} node
      * @deprecated should not be visible outside of class
      */
-    renameFavorite(node: IZoweDatasetTreeNode, newLabel: string);
+    renameFavorite(node: IZoweDatasetTreeNode, newLabel: string): Promise<void>;
     /**
      * Renames a node based on the profile and it's label
      * @deprecated should not be visible outside of class
@@ -245,7 +245,7 @@ export interface IZoweTree<T> extends vscode.TreeDataProvider<T> {
      *
      * @param {string} name the member to remove
      */
-    removeFileHistory?(name: string);
+    removeFileHistory?(name: string): Promise<void>;
     /**
      * Returns a new dataset filter string, from an old filter and a new string
      *

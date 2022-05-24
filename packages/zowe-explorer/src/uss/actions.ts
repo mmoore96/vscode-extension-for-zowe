@@ -14,10 +14,9 @@ import * as zowe from "@zowe/cli";
 import * as fs from "fs";
 import * as globals from "../globals";
 import * as path from "path";
-import { ZoweUSSNode } from "./ZoweUSSNode";
 import { concatChildNodes, willForceUpload, uploadContent } from "../shared/utils";
 import { errorHandling } from "../utils/ProfilesUtils";
-import { ValidProfileEnum, IZoweTree, IZoweUSSTreeNode } from "@zowe/zowe-explorer-api";
+import { ValidProfileEnum, IZoweTree, IZoweUSSTreeNode, ZoweVsCodeExtension } from "@zowe/zowe-explorer-api";
 import { Profiles } from "../Profiles";
 import { ZoweExplorerApiRegister } from "../ZoweExplorerApiRegister";
 import { isBinaryFileSync } from "isbinaryfile";
@@ -25,12 +24,9 @@ import { Session, ITaskWithStatus } from "@zowe/imperative";
 import * as contextually from "../shared/context";
 import { setFileSaved } from "../utils/workspace";
 import * as nls from "vscode-nls";
-import { getIconByNode } from "../generators/icons";
-import { returnIconState, resetValidationSettings } from "../shared/actions";
-import { PersistentFilters } from "../PersistentFilters";
 import { refreshAll } from "../shared/refresh";
-import { UIViews } from "../shared/ui-views";
 import { IUploadOptions } from "@zowe/zos-files-for-zowe-sdk";
+import { getIconByNode } from "../generators/icons";
 
 // Set up localization
 nls.config({
@@ -51,36 +47,36 @@ export async function createUSSNode(
     ussFileProvider: IZoweTree<IZoweUSSTreeNode>,
     nodeType: string,
     isTopLevel?: boolean
-) {
+): Promise<void> {
     await ussFileProvider.checkCurrentProfile(node);
-    let filePath;
+    let filePath: string;
     if (contextually.isSession(node)) {
         const filePathOptions: vscode.InputBoxOptions = {
             placeHolder: localize("createUSSNode.inputBox.placeholder", "{0} location", nodeType),
             prompt: localize("createUSSNode.inputBox.prompt", "Choose a location to create the {0}", nodeType),
             value: node.tooltip as string,
         };
-        filePath = await UIViews.inputBox(filePathOptions);
+        filePath = await ZoweVsCodeExtension.inputBox(filePathOptions);
     } else {
         filePath = node.fullPath;
     }
     const nameOptions: vscode.InputBoxOptions = {
         placeHolder: localize("createUSSNode.name", "Name of file or directory"),
     };
-    const name = await UIViews.inputBox(nameOptions);
+    const name = await ZoweVsCodeExtension.inputBox(nameOptions);
     if (name && filePath) {
         try {
             filePath = `${filePath}/${name}`;
             await ZoweExplorerApiRegister.getUssApi(node.getProfile()).create(filePath, nodeType);
             if (isTopLevel) {
                 await Profiles.getInstance().refresh(ZoweExplorerApiRegister.getInstance());
-                refreshAll(ussFileProvider);
+                await refreshAll(ussFileProvider);
             } else {
                 ussFileProvider.refreshElement(node);
             }
             const newNode = await node.getChildren().then((children) => children.find((child) => child.label === name));
             await ussFileProvider.getTreeView().reveal(node, { select: true, focus: true });
-            ussFileProvider.getTreeView().reveal(newNode, { select: true, focus: true });
+            await ussFileProvider.getTreeView().reveal(newNode, { select: true, focus: true });
         } catch (err) {
             await errorHandling(
                 err,
@@ -92,11 +88,14 @@ export async function createUSSNode(
     }
 }
 
-export async function refreshUSSInTree(node: IZoweUSSTreeNode, ussFileProvider: IZoweTree<IZoweUSSTreeNode>) {
-    await ussFileProvider.refreshElement(node);
+export function refreshUSSInTree(node: IZoweUSSTreeNode, ussFileProvider: IZoweTree<IZoweUSSTreeNode>): void {
+    ussFileProvider.refreshElement(node);
 }
 
-export async function refreshDirectory(node: IZoweUSSTreeNode, ussFileProvider: IZoweTree<IZoweUSSTreeNode>) {
+export async function refreshDirectory(
+    node: IZoweUSSTreeNode,
+    ussFileProvider: IZoweTree<IZoweUSSTreeNode>
+): Promise<void> {
     try {
         await node.getChildren();
         ussFileProvider.refreshElement(node);
@@ -105,7 +104,10 @@ export async function refreshDirectory(node: IZoweUSSTreeNode, ussFileProvider: 
     }
 }
 
-export async function createUSSNodeDialog(node: IZoweUSSTreeNode, ussFileProvider: IZoweTree<IZoweUSSTreeNode>) {
+export async function createUSSNodeDialog(
+    node: IZoweUSSTreeNode,
+    ussFileProvider: IZoweTree<IZoweUSSTreeNode>
+): Promise<void> {
     await ussFileProvider.checkCurrentProfile(node);
     if (
         Profiles.getInstance().validProfile === ValidProfileEnum.VALID ||
@@ -118,7 +120,7 @@ export async function createUSSNodeDialog(node: IZoweUSSTreeNode, ussFileProvide
         };
         const type = await vscode.window.showQuickPick([globals.USS_DIR_CONTEXT, "File"], quickPickOptions);
         const isTopLevel = true;
-        return createUSSNode(node, ussFileProvider, type, isTopLevel);
+        await createUSSNode(node, ussFileProvider, type, isTopLevel);
     }
 }
 
@@ -127,17 +129,20 @@ export async function createUSSNodeDialog(node: IZoweUSSTreeNode, ussFileProvide
  *
  * @param {ZoweUSSNode} node
  */
-export async function deleteFromDisk(node: IZoweUSSTreeNode, filePath: string) {
+export function deleteFromDisk(node: IZoweUSSTreeNode, filePath: string): void {
     try {
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
         }
-    } catch (err) {
-        // tslint:disable-next-line: no-empty
+    } catch (_) {
+        // Do nothing
     }
 }
 
-export async function uploadDialog(node: IZoweUSSTreeNode, ussFileProvider: IZoweTree<IZoweUSSTreeNode>) {
+export async function uploadDialog(
+    node: IZoweUSSTreeNode,
+    ussFileProvider: IZoweTree<IZoweUSSTreeNode>
+): Promise<void> {
     const fileOpenOptions = {
         canSelectFiles: true,
         openLabel: "Upload Files",
@@ -161,7 +166,7 @@ export async function uploadDialog(node: IZoweUSSTreeNode, ussFileProvider: IZow
     ussFileProvider.refresh();
 }
 
-export async function uploadBinaryFile(node: IZoweUSSTreeNode, filePath: string) {
+export async function uploadBinaryFile(node: IZoweUSSTreeNode, filePath: string): Promise<void> {
     try {
         const localFileName = path.parse(filePath).base;
         const ussName = `${node.fullPath}/${localFileName}`;
@@ -171,7 +176,7 @@ export async function uploadBinaryFile(node: IZoweUSSTreeNode, filePath: string)
     }
 }
 
-export async function uploadFile(node: IZoweUSSTreeNode, doc: vscode.TextDocument) {
+export async function uploadFile(node: IZoweUSSTreeNode, doc: vscode.TextDocument): Promise<void> {
     try {
         const localFileName = path.parse(doc.fileName).base;
         const ussName = `${node.fullPath}/${localFileName}`;
@@ -188,7 +193,7 @@ export async function uploadFile(node: IZoweUSSTreeNode, doc: vscode.TextDocumen
                 task,
             };
             if (prof.profile.encoding) {
-                options.encoding = prof.profile.encoding;
+                options.encoding = prof.profile.encoding as string;
             }
             await ZoweExplorerApiRegister.getUssApi(prof).putContent(doc.fileName, ussName, options);
         } else {
@@ -204,15 +209,15 @@ export async function uploadFile(node: IZoweUSSTreeNode, doc: vscode.TextDocumen
  *
  * @param {ZoweUSSNode} node
  */
-export async function copyPath(node: IZoweUSSTreeNode) {
+export async function copyPath(node: IZoweUSSTreeNode): Promise<void> {
     if (globals.ISTHEIA) {
         // Remove when Theia supports VS Code API for accessing system clipboard
-        vscode.window.showInformationMessage(
+        await vscode.window.showInformationMessage(
             localize("copyPath.infoMessage", "Copy Path is not yet supported in Theia.")
         );
         return;
     }
-    vscode.env.clipboard.writeText(node.fullPath);
+    await vscode.env.clipboard.writeText(node.fullPath);
 }
 
 /**
@@ -226,8 +231,8 @@ export async function changeFileType(
     node: IZoweUSSTreeNode,
     binary: boolean,
     ussFileProvider: IZoweTree<IZoweUSSTreeNode>
-) {
-    node.setBinary(binary);
+): Promise<void> {
+    await node.setBinary(binary);
     await node.openUSS(true, true, ussFileProvider);
     ussFileProvider.refresh();
 }
@@ -239,7 +244,10 @@ export async function changeFileType(
  * @param {Session} session - Desired session
  * @param {vscode.TextDocument} doc - TextDocument that is being saved
  */
-export async function saveUSSFile(doc: vscode.TextDocument, ussFileProvider: IZoweTree<IZoweUSSTreeNode>) {
+export async function saveUSSFile(
+    doc: vscode.TextDocument,
+    ussFileProvider: IZoweTree<IZoweUSSTreeNode>
+): Promise<void> {
     globals.LOG.debug(localize("saveUSSFile.log.debug.saveRequest", "save requested for USS file ") + doc.fileName);
     const start = path.join(globals.USS_DIR + path.sep).length;
     const ending = doc.fileName.substring(start);
@@ -249,7 +257,6 @@ export async function saveUSSFile(doc: vscode.TextDocument, ussFileProvider: IZo
     // get session from session name
     let documentSession: Session;
     let binary;
-    let node: IZoweUSSTreeNode;
 
     const sesNode: IZoweUSSTreeNode = ussFileProvider.mSessionNodes.find(
         (child) => child.getProfileName() && child.getProfileName() === sesName.trim()
@@ -267,7 +274,7 @@ export async function saveUSSFile(doc: vscode.TextDocument, ussFileProvider: IZo
         // saving from session
         nodes = concatChildNodes([sesNode]);
     }
-    node = nodes.find((zNode) => {
+    const node = nodes.find((zNode) => {
         if (contextually.isText(zNode)) {
             return zNode.fullPath.trim() === remote;
         } else {
@@ -308,7 +315,7 @@ export async function saveUSSFile(doc: vscode.TextDocument, ussFileProvider: IZo
             setFileSaved(true);
             // this part never runs! zowe.Upload.fileToUSSFile doesn't return success: false, it just throws the error which is caught below!!!!!
         } else {
-            vscode.window.showErrorMessage(uploadResponse.commandResponse);
+            await vscode.window.showErrorMessage(uploadResponse.commandResponse);
         }
     } catch (err) {
         // TODO: error handling must not be zosmf specific
@@ -336,8 +343,12 @@ export async function saveUSSFile(doc: vscode.TextDocument, ussFileProvider: IZo
                     node.setEtag(downloadEtag);
                 }
                 this.downloaded = true;
+                const icon = getIconByNode(node);
+                if (icon) {
+                    await this.setIcon(icon.path);
+                }
 
-                vscode.window.showWarningMessage(
+                await vscode.window.showWarningMessage(
                     localize(
                         "saveFile.error.etagMismatch",
                         "Remote file has been modified in the meantime.\nSelect 'Compare' to resolve the conflict."

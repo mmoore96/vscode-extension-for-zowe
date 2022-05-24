@@ -437,7 +437,7 @@ export async function openPS(
     node: api.IZoweDatasetTreeNode,
     previewMember: boolean,
     datasetProvider?: api.IZoweTree<api.IZoweDatasetTreeNode>
-) {
+): Promise<void> {
     if (datasetProvider) {
         await datasetProvider.checkCurrentProfile(node);
     }
@@ -495,7 +495,7 @@ export async function openPS(
         } catch (err) {
             globals.LOG.error(
                 localize("openPS.log.error.openDataSet", "Error encountered when opening data set! ") +
-                    JSON.stringify(err)
+                JSON.stringify(err)
             );
             await errorHandling(err, node.getProfileName(), err.message);
             throw err;
@@ -572,7 +572,7 @@ export async function createFile(
     ];
     // Make a nice new mutable array for the DS properties
     // tslint:disable-next-line: prefer-const
-    let newDSProperties = JSON.parse(JSON.stringify(globals.DATA_SET_PROPERTIES));
+    const newDSProperties = JSON.parse(JSON.stringify(globals.DATA_SET_PROPERTIES));
 
     datasetProvider.checkCurrentProfile(node);
     if (Profiles.getInstance().validProfile !== api.ValidProfileEnum.INVALID) {
@@ -790,7 +790,7 @@ export async function showDSAttributes(
         } catch (err) {
             globals.LOG.error(
                 localize("showDSAttributes.log.error", "Error encountered when listing attributes! ") +
-                    JSON.stringify(err)
+                JSON.stringify(err)
             );
             await errorHandling(
                 err,
@@ -1004,13 +1004,13 @@ export async function deleteDataset(node: api.IZoweTreeNode, datasetProvider: ap
     } catch (err) {
         globals.LOG.error(
             localize("deleteDataSet.delete.log.error", "Error encountered when deleting data set! ") +
-                JSON.stringify(err)
+            JSON.stringify(err)
         );
         if (err.message.includes(localize("deleteDataSet.error.notFound", "not found"))) {
             vscode.window.showInformationMessage(
                 localize("deleteDataSet.notFound.error1", "Unable to find file: ") +
-                    label +
-                    localize("deleteDataSet.notFound.error2", " was probably already deleted.")
+                label +
+                localize("deleteDataSet.notFound.error2", " was probably already deleted.")
             );
         } else {
             await errorHandling(err, node.getProfileName(), err.message);
@@ -1085,13 +1085,13 @@ export async function refreshPS(node: api.IZoweDatasetTreeNode) {
     } catch (err) {
         globals.LOG.error(
             localize("refreshPS.log.error.refresh", "Error encountered when refreshing data set view: ") +
-                JSON.stringify(err)
+            JSON.stringify(err)
         );
         if (err.message.includes(localize("refreshPS.error.notFound", "not found"))) {
             vscode.window.showInformationMessage(
                 localize("refreshPS.file1", "Unable to find file: ") +
-                    label +
-                    localize("refreshPS.file2", " was probably deleted.")
+                label +
+                localize("refreshPS.file2", " was probably deleted.")
             );
         } else {
             await errorHandling(err, node.getProfileName(), err.message);
@@ -1191,8 +1191,8 @@ export async function hMigrateDataSet(node: ZoweDatasetNode) {
         const { dataSetName } = dsUtils.getNodeLabels(node);
         vscode.window.showInformationMessage(
             localize("hMigrate.requestSent1", "Migration of dataset: ") +
-                dataSetName +
-                localize("hMigrate.requestSent2", " requested.")
+            dataSetName +
+            localize("hMigrate.requestSent2", " requested.")
         );
         try {
             return ZoweExplorerApiRegister.getMvsApi(node.getProfile()).hMigrateDataSet(dataSetName);
@@ -1218,8 +1218,8 @@ export async function hRecallDataSet(node: ZoweDatasetNode) {
         const { dataSetName } = dsUtils.getNodeLabels(node);
         vscode.window.showInformationMessage(
             localize("hRecall.requestSent1", "Recall of dataset: ") +
-                dataSetName +
-                localize("hRecall.requestSent2", " requested.")
+            dataSetName +
+            localize("hRecall.requestSent2", " requested.")
         );
         try {
             return ZoweExplorerApiRegister.getMvsApi(node.getProfile()).hRecallDataSet(dataSetName);
@@ -1324,8 +1324,8 @@ export async function saveFile(doc: vscode.TextDocument, datasetProvider: api.IZ
     if (docPath.toUpperCase().indexOf(globals.DS_DIR.toUpperCase()) === -1) {
         globals.LOG.debug(
             localize("saveFile.log.debug.path", "path.relative returned a non-blank directory.") +
-                localize("saveFile.log.debug.directory", "Assuming we are not in the DS_DIR directory: ") +
-                path.relative(docPath, globals.DS_DIR)
+            localize("saveFile.log.debug.directory", "Assuming we are not in the DS_DIR directory: ") +
+            path.relative(docPath, globals.DS_DIR)
         );
         return;
     }

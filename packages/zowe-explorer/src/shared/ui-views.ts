@@ -20,6 +20,6 @@ export class UIViews {
      * @deprecated Please use ZoweVsCodeExtension.inputBox(...)
      */
     public static async inputBox(inputBoxOptions: vscode.InputBoxOptions): Promise<string> {
-        return ZoweVsCodeExtension.inputBox(inputBoxOptions);
+        return await ZoweVsCodeExtension.inputBox(inputBoxOptions);
     }
 }
