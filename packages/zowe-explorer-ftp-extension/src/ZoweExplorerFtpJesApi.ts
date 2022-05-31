@@ -43,6 +43,7 @@ export class FtpJesApi extends AbstractFtpApi implements ZoweExplorerApi.IJes {
                             owner: job.owner,
                             class: job.class,
                             status: job.status,
+                            retcode: job.retcode,
                         };
                     });
                     return results;
@@ -71,6 +72,7 @@ export class FtpJesApi extends AbstractFtpApi implements ZoweExplorerApi.IJes {
                         owner: jobStatus.owner,
                         class: jobStatus.class,
                         status: jobStatus.status,
+                        retcode: jobStatus.retcode,
                     };
                 }
             }
